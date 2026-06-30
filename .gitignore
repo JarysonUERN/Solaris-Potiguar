@@ -4,7 +4,7 @@ BackEnd/.env*
 !BackEnd/.env*.erb
 BackEnd/log/*
 BackEnd/tmp/*
-!BackEnd/log/.keep
+!BackEnd/log/.kee
 !BackEnd/tmp/.keep
 BackEnd/tmp/pids/*
 !BackEnd/tmp/pids/
@@ -44,3 +44,6 @@ lerna-debug.log*
 *.njsproj
 *.sln
 *.sw?
+
+#template files
+FrontEnd/template
