@@ -1,0 +1,46 @@
+# Rails - BackEnd
+BackEnd/.bundle
+BackEnd/.env*
+!BackEnd/.env*.erb
+BackEnd/log/*
+BackEnd/tmp/*
+!BackEnd/log/.keep
+!BackEnd/tmp/.keep
+BackEnd/tmp/pids/*
+!BackEnd/tmp/pids/
+!BackEnd/tmp/pids/.keep
+BackEnd/storage/*
+!BackEnd/storage/.keep
+BackEnd/tmp/storage/*
+!BackEnd/tmp/storage/
+!BackEnd/tmp/storage/.keep
+BackEnd/public/assets
+BackEnd/config/master.key
+
+# React - FrontEnd
+FrontEnd/node_modules
+FrontEnd/dist
+FrontEnd/dist-ssr
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Local env files
+*.local
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
