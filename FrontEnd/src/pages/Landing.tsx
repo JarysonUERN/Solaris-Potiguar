@@ -4,6 +4,7 @@ import {
   Sun, Sparkles, MapPin, Brain, Network, Zap, Battery,
   BarChart2, ArrowRight, Menu, X
 } from "lucide-react";
+import ThemeToggle from "../components/ThemeToggle.js";
 
 export default function Landing() {
   const navigate = useNavigate();
@@ -14,9 +15,13 @@ export default function Landing() {
       <nav className="fixed top-0 left-0 right-0 z-50 border-b border-border bg-background/80 backdrop-blur-md">
         <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-md bg-primary flex items-center justify-center">
-              <Sun size={14} className="text-primary-foreground" />
-            </div>
+            <ThemeToggle
+              className="w-7 h-7 rounded-md flex items-center justify-center"
+              iconLight="text-primary-foreground"
+              iconDark="text-primary-foreground"
+              bgDark="bg-primary"
+              bgLight="bg-blue-900"
+            />
             <span className="font-semibold text-foreground tracking-tight"> Solaris Potiguar</span>
           </div>
 
