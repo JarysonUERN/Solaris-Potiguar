@@ -1,8 +1,9 @@
+import { style } from "../styles/styles.js";
 import { useLocation, useNavigate } from "react-router-dom";
 import {
   ChevronLeft, Brain, Network, CloudSun, Zap, Battery, Cpu
 } from "lucide-react";
-import type { Analysis } from "../types";
+import type { Analysis } from "../types/index.js";
 
 export default function Result() {
   const navigate = useNavigate();
@@ -15,31 +16,31 @@ export default function Result() {
   }
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
-      <header className="border-b border-border px-6 py-4 sticky top-0 bg-background/95 backdrop-blur z-10">
-        <div className="max-w-3xl mx-auto flex items-center gap-3">
+    <div className={style.page}>
+      <header className={style.headerSticky}>
+        <div className={style.headerInnerGap3}>
           <button
             onClick={() => navigate("/dashboard")}
-            className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
+            className={style.btnBackResult}
           >
             <ChevronLeft size={16} />
             Dashboard
           </button>
-          <div className="h-4 w-px bg-border" />
-          <div className="text-xs font-mono text-muted-foreground">{analysis.time}</div>
+          <div className={style.divider} />
+          <div className={style.textMonoXs}>{analysis.time}</div>
         </div>
       </header>
 
-      <main className="max-w-3xl mx-auto px-6 py-8 space-y-5">
-        <div className="p-5 rounded-xl border border-primary/25 bg-primary/8">
+      <main className={style.containerSmSpaceY5}>
+        <div className={style.cardPrimary}>
           <div className="flex items-center gap-2 text-xs font-mono text-primary mb-3">
             <Brain size={12} />
             SÍNTESE DO ORQUESTRADOR
           </div>
-          <p className="text-foreground text-lg leading-relaxed">{analysis.synthesis}</p>
+          <p className={style.textLgForeground}>{analysis.synthesis}</p>
         </div>
 
-        <div className="text-xs font-mono text-muted-foreground py-2 flex items-center gap-2">
+        <div className={style.agentHeaderMuted}>
           <Network size={11} />
           RACIOCÍNIO INDIVIDUAL DOS AGENTES
         </div>
@@ -47,7 +48,7 @@ export default function Result() {
         {[
           {
             key: "meteo",
-            icon: <CloudSun size={15} className="text-primary" />,
+            icon: <CloudSun size={15} className={style.textPrimary} />,
             label: "Agente Meteorológico",
             badge: "METEO",
             badgeColor: "bg-primary/15 text-primary border-primary/25",
@@ -56,7 +57,7 @@ export default function Result() {
           },
           {
             key: "consumption",
-            icon: <Zap size={15} className="text-blue-400" />,
+            icon: <Zap size={15} className={style.textBlue} />,
             label: "Agente de Consumo",
             badge: "CONSUMO",
             badgeColor: "bg-blue-500/15 text-blue-400 border-blue-500/25",
@@ -65,7 +66,7 @@ export default function Result() {
           },
           {
             key: "storage",
-            icon: <Battery size={15} className="text-accent" />,
+            icon: <Battery size={15} className={style.textAccent} />,
             label: "Agente de Armazenamento",
             badge: "STORAGE",
             badgeColor: "bg-accent/15 text-accent border-accent/25",
@@ -73,42 +74,42 @@ export default function Result() {
             text: analysis.agents.storage,
           },
         ].map((agent) => (
-          <div key={agent.key} className={`p-5 rounded-xl border ${agent.borderColor} bg-card`}>
+          <div key={agent.key} className={style.cardAgentResult(agent.borderColor)}>
             <div className="flex items-center gap-2.5 mb-3">
-              <div className="w-8 h-8 rounded-lg bg-secondary flex items-center justify-center">
+              <div className={style.iconBoxResultSm}>
                 {agent.icon}
               </div>
               <div>
-                <div className="text-sm font-medium text-foreground">{agent.label}</div>
-                <span className={`text-[10px] font-mono font-bold px-1.5 py-0.5 rounded border ${agent.badgeColor}`}>
+                <div className={style.subtitleCard}>{agent.label}</div>
+                <span className={style.badgeAgent(agent.badgeColor)}>
                   {agent.badge}
                 </span>
               </div>
             </div>
-            <p className="text-sm text-muted-foreground leading-relaxed">{agent.text}</p>
+            <p className={style.textSmMutedLeading5}>{agent.text}</p>
           </div>
         ))}
 
-        <div className="p-5 rounded-xl border border-border bg-card">
-          <div className="text-xs font-mono text-muted-foreground mb-4 flex items-center gap-1.5">
+        <div className={style.flowBox}>
+          <div className={style.flowHeader}>
             <Cpu size={11} />
             FLUXO DE DECISÃO
           </div>
-          <div className="flex items-center justify-between">
+          <div className={style.flowRow}>
             {[
               { label: "METEO", color: "bg-primary" },
               { label: "CONSUMO", color: "bg-blue-500" },
               { label: "STORAGE", color: "bg-accent" },
             ].map((item, i) => (
-              <div key={item.label} className="flex items-center gap-2">
-                <div className={`${item.color} px-2.5 py-1 rounded text-[10px] font-mono font-bold text-background`}>
+              <div key={item.label} className={style.flowItem}>
+                <div className={style.flowBadge(item.color)}>
                   {item.label}
                 </div>
-                {i < 2 && <div className="text-muted-foreground text-xs">+</div>}
+                {i < 2 && <div className={style.flowPlus}>+</div>}
               </div>
             ))}
-            <div className="text-muted-foreground text-xs mx-2">→</div>
-            <div className="bg-yellow-400/15 border border-yellow-400/30 px-2.5 py-1 rounded text-[10px] font-mono font-bold text-yellow-300">
+            <div className={style.flowArrow}>→</div>
+            <div className={style.flowSynthesis}>
               SÍNTESE
             </div>
           </div>

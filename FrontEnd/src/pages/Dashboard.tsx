@@ -6,6 +6,8 @@ import {
 } from "lucide-react";
 import ThemeToggle from "../components/ThemeToggle.js";
 import type { PropertyConfig, Analysis } from "../types/index.js";
+import { style } from "../styles/styles.js";
+import homeIcon from "../assets/icons/home-1-svgrepo-com.svg";
 
 const mockAnalyses: Analysis[] = [
   {
@@ -72,9 +74,9 @@ const weatherData = {
 };
 
 function WeatherIcon({ type, size = 20 }: { type: string; size?: number }) {
-  if (type === "sun") return <Sun size={size} className="text-primary" />;
-  if (type === "cloud-sun") return <CloudSun size={size} className="text-yellow-400" />;
-  return <Cloud size={size} className="text-muted-foreground" />;
+  if (type === "sun") return <Sun size={size} className={style.textPrimary} />;
+  if (type === "cloud-sun") return <CloudSun size={size} className={style.textYellow} />;
+  return <Cloud size={size} className={style.textMuted} />;
 }
 
 export default function Dashboard() {
@@ -101,8 +103,8 @@ export default function Dashboard() {
         id: `a${Date.now()}`,
         time: "Agora",
         summary: "Geração excelente — acumule para a noite",
-        agents: mockAnalyses[0].agents,
-        synthesis: mockAnalyses[0].synthesis,
+        agents: mockAnalyses[0]!.agents,
+        synthesis: mockAnalyses[0]!.synthesis,
       };
       setAnalyses([newAnalysis, ...analyses]);
       setAnalyzing(false);
@@ -110,58 +112,66 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
-      <header className="border-b border-border px-6 py-4">
-        <div className="max-w-3xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-3">
-          <ThemeToggle size={13} />
+    <div className={style.page}>
+      <header className={style.header}>
+        <div className={style.headerInner}>
+          <div className={style.flexCenterGap3}>
+            <button
+              type="button"
+              onClick={() => navigate("/")}
+              className="mr-1 flex h-8 w-8 items-center justify-center rounded-lg border border-border bg-card/80 transition-colors hover:border-primary/30 hover:bg-primary/10"
+              aria-label="Voltar para a landing page"
+            >
+              <img src={homeIcon} alt="Ícone home" className="h-4 w-4" />
+            </button>
+            <ThemeToggle size={13} />
             <div>
-              <div className="text-sm font-semibold text-foreground">{config.name}</div>
-              <div className="text-[11px] text-muted-foreground font-mono flex items-center gap-1">
+              <div className={style.subtitleHeader}>{config.name}</div>
+              <div className={style.textLocation}>
                 <MapPin size={9} />
                 {config.city}
               </div>
             </div>
           </div>
-          <div className="flex items-center gap-2 text-xs font-mono text-muted-foreground">
+          <div className={style.textSpecs}>
             <Cpu size={12} />
             {config.capacity} kWp · {config.storage || "0"} kWh batt
           </div>
         </div>
       </header>
 
-      <main className="max-w-3xl mx-auto px-6 py-8 space-y-6">
-        <div className="p-5 rounded-xl border border-border bg-card">
-          <div className="flex items-center justify-between mb-4">
-            <div className="text-xs font-mono text-muted-foreground flex items-center gap-1.5">
-              <CloudSun size={12} className="text-primary" />
+      <main className={`${style.containerSm} px-6 py-8 ${style.spaceY6}`}>
+        <div className={style.card}>
+          <div className={`${style.flexBetween} mb-4`}>
+            <div className={style.textSectionLabel}>
+              <CloudSun size={12} className={style.textPrimary} />
               CLIMA AGORA · {config.city.toUpperCase()}
             </div>
-            <div className="text-[10px] font-mono text-muted-foreground">Open-Meteo API</div>
+            <div className={style.forecastTime}>Open-Meteo API</div>
           </div>
 
           <div className="flex items-center gap-4 mb-5">
-            <Sun size={40} className="text-primary" />
+            <Sun size={40} className={style.textPrimary} />
             <div>
-              <div className="text-4xl font-bold text-foreground font-mono">{weatherData.temp}°</div>
-              <div className="text-sm text-muted-foreground">{weatherData.condition}</div>
+              <div className={style.text4xlMono}>{weatherData.temp}°</div>
+              <div className={style.textSmMuted}>{weatherData.condition}</div>
             </div>
-            <div className="ml-auto grid grid-cols-2 gap-x-6 gap-y-1 text-right">
-              <div className="text-xs text-muted-foreground">UV</div>
-              <div className="text-xs font-mono text-foreground">{weatherData.uv}</div>
-              <div className="text-xs text-muted-foreground">Vento</div>
-              <div className="text-xs font-mono text-foreground">{weatherData.wind} km/h</div>
-              <div className="text-xs text-muted-foreground">Umidade</div>
-              <div className="text-xs font-mono text-foreground">{weatherData.humidity}%</div>
+            <div className={style.gridStats}>
+              <div className={style.textXs}>UV</div>
+              <div className={style.textMonoFg}>{weatherData.uv}</div>
+              <div className={style.textXs}>Vento</div>
+              <div className={style.textMonoFg}>{weatherData.wind} km/h</div>
+              <div className={style.textXs}>Umidade</div>
+              <div className={style.textMonoFg}>{weatherData.humidity}%</div>
             </div>
           </div>
 
-          <div className="grid grid-cols-6 gap-1 border-t border-border pt-4">
+          <div className={style.gridCols6}>
             {weatherData.forecast.map((f) => (
-              <div key={f.hour} className="flex flex-col items-center gap-1.5">
-                <div className="text-[10px] font-mono text-muted-foreground">{f.hour}</div>
+              <div key={f.hour} className={style.flexCol}>
+                <div className={style.forecastTime}>{f.hour}</div>
                 <WeatherIcon type={f.icon} size={16} />
-                <div className="text-xs font-mono text-foreground">{f.temp}°</div>
+                <div className={style.textMonoFg}>{f.temp}°</div>
               </div>
             ))}
           </div>
@@ -170,10 +180,10 @@ export default function Dashboard() {
         <button
           onClick={handleAnalyze}
           disabled={analyzing}
-          className={`w-full py-4 rounded-xl font-semibold text-base transition-all flex items-center justify-center gap-3 ${
+          className={`${style.btnAnalyze} ${
             analyzing
-              ? "bg-secondary text-muted-foreground cursor-not-allowed"
-              : "bg-primary text-primary-foreground hover:bg-primary/90 active:scale-[0.99]"
+              ? style.btnAnalyzeDisabled
+              : style.btnAnalyzeActive
           }`}
         >
           {analyzing ? (
@@ -191,18 +201,18 @@ export default function Dashboard() {
 
         {analyses.length > 0 && (
           <div
-            className="p-5 rounded-xl border border-primary/20 bg-primary/5 cursor-pointer hover:bg-primary/10 transition-colors group"
+            className={style.cardResult}
             onClick={() => navigate("/result", { state: { analysis: analyses[0] } })}
           >
-            <div className="flex items-center justify-between mb-3">
-              <div className="flex items-center gap-2 text-xs font-mono text-primary">
+            <div className={`${style.flexBetween} mb-3`}>
+              <div className={style.resultHeader}>
                 <Brain size={12} />
-                RECOMENDAÇÃO · {analyses[0].time}
+                RECOMENDAÇÃO · {analyses[0]!.time}
               </div>
-              <ChevronRight size={16} className="text-primary/50 group-hover:text-primary group-hover:translate-x-0.5 transition-all" />
+              <ChevronRight size={16} className={style.chevronIcon} />
             </div>
-            <p className="text-foreground leading-relaxed">{analyses[0].synthesis}</p>
-            <div className="mt-3 flex items-center gap-1.5 text-xs text-primary/70 group-hover:text-primary transition-colors">
+            <p className="text-foreground leading-relaxed">{analyses[0]!.synthesis}</p>
+            <div className={`mt-3 ${style.analysisCard}`}>
               <Layers size={11} />
               Ver raciocínio dos 3 agentes
             </div>
@@ -211,35 +221,35 @@ export default function Dashboard() {
 
         {analyses.length > 1 && (
           <div>
-            <div className="flex items-center gap-2 text-xs font-mono text-muted-foreground mb-3">
+            <div className={style.analysisHistoryHeader}>
               <History size={11} />
               ANÁLISES ANTERIORES
             </div>
-            <div className="space-y-2">
+            <div className={style.spaceY2}>
               {analyses.slice(1, 3).map((a) => (
                 <button
                   key={a.id}
                   onClick={() => navigate("/result", { state: { analysis: a } })}
-                  className="w-full text-left p-4 rounded-lg border border-border bg-card hover:bg-secondary/30 hover:border-primary/20 transition-all group flex items-start justify-between gap-3"
+                  className={style.cardHistory}
                 >
                   <div>
-                    <div className="text-xs font-mono text-muted-foreground mb-1">{a.time}</div>
-                    <div className="text-sm text-foreground">{a.summary}</div>
+                    <div className={style.textResultMuted}>{a.time}</div>
+                    <div className={style.textResultFg}>{a.summary}</div>
                   </div>
-                  <ChevronRight size={14} className="text-muted-foreground mt-0.5 flex-shrink-0 group-hover:text-primary transition-colors" />
+                  <ChevronRight size={14} className={style.btnBack} />
                 </button>
               ))}
             </div>
           </div>
         )}
 
-        <div className="grid grid-cols-3 gap-3">
+        <div className={style.gridCols3}>
           {[
-            { label: "Geração", value: "6,2 kW", sub: "atual", icon: <Sun size={13} className="text-primary" />, color: "text-primary" },
-            { label: "Consumo", value: "2,3 kW", sub: "atual", icon: <Zap size={13} className="text-blue-400" />, color: "text-blue-400" },
-            { label: "Bateria", value: "67%", sub: "8,0 / 12 kWh", icon: <Battery size={13} className="text-accent" />, color: "text-accent" },
+            { label: "Geração", value: "6,2 kW", sub: "atual", icon: <Sun size={13} className={style.textPrimary} />, color: "text-primary" },
+            { label: "Consumo", value: "2,3 kW", sub: "atual", icon: <Zap size={13} className={style.textBlue} />, color: "text-blue-400" },
+            { label: "Bateria", value: "67%", sub: "8,0 / 12 kWh", icon: <Battery size={13} className={style.textAccent} />, color: "text-accent" },
           ].map((stat) => (
-            <div key={stat.label} className="p-4 rounded-lg border border-border bg-card">
+            <div key={stat.label} className={style.cardSmall}>
               <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-2">
                 {stat.icon}
                 {stat.label}
