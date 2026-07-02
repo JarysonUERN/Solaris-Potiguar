@@ -1,10 +1,24 @@
+export type Profile =
+  | "irrigacao"
+  | "avicultura"
+  | "comercio"
+  | "residencial"
+  | "agroindustria";
+
 export interface PropertyConfig {
   name: string;
   city: string;
   capacity: string;
   storage: string;
   consumption: string;
-  peakHour: "morning" | "afternoon" | "night";
+  profile: Profile;
+}
+
+export interface LoadCurve {
+  label: string;
+  icon?: string;
+  description: string;
+  hourlyPercentage: number[];
 }
 
 export interface Analysis {
