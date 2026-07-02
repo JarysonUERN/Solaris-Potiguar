@@ -335,7 +335,7 @@ export default function Landing() {
           <div className={style.titleSection}>
             <div className={style.textMonoTitle}>Por que Solaris Potiguar?</div>
           </div>
-          <section className="py-16 px-6">
+          <section className="py-6 px-6">
             <LandscapeCarousel />
           </section>
           <div className={style.titleSection}>
