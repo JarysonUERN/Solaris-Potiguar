@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Sun, Sparkles, MapPin, Network, Zap, Battery,
@@ -7,11 +7,14 @@ import {
 import { style } from "../styles/styles.js";
 import ThemeToggle from "../components/ThemeToggle.js";
 import HeroCarousel from "../components/HeroCarousel.js";
+import LandscapeCarousel from "../components/LandscapeCarousel.js";
 
 export default function Landing() {
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const heroRef = useRef<HTMLDivElement>(null);
+  const [mousePos, setMousePos] = useState({ x: 50, y: 50 });
 
   useEffect(() => {
     const savedSession = localStorage.getItem("solaris-auth");
@@ -22,6 +25,31 @@ export default function Landing() {
     localStorage.removeItem("solaris-auth");
     setIsLoggedIn(false);
   };
+
+  const handleMouseMove = useCallback((e: React.MouseEvent) => {
+    const el = heroRef.current;
+    if (!el) return;
+    const rect = el.getBoundingClientRect();
+    const x = ((e.clientX - rect.left) / rect.width) * 100;
+    const y = ((e.clientY - rect.top) / rect.height) * 100;
+    setMousePos({ x, y });
+  }, []);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("revealed");
+            observer.unobserve(entry.target);
+          }
+        });
+      },
+      { threshold: 0.1 }
+    );
+    document.querySelectorAll(".reveal-on-scroll").forEach((el) => observer.observe(el));
+    return () => observer.disconnect();
+  }, []);
 
   return (
     <div className={style.pageLanding}>
@@ -109,7 +137,29 @@ export default function Landing() {
         )}
       </nav>
 
-      <section className={style.heroSection}>
+      <section
+        ref={heroRef}
+        onMouseMove={handleMouseMove}
+        className={style.heroSection + " " + style.glowContainer + " group"}
+      >
+        <div
+          className={style.heroGlow}
+          style={{
+            background: "radial-gradient(circle at center, var(--glow-strong), transparent 70%)",
+            top: `${mousePos.y - 25}%`,
+            right: `${100 - mousePos.x - 25}%`,
+            transition: "top 0.3s ease-out, right 0.3s ease-out",
+          }}
+        />
+        <div
+          className={style.heroGlowLeft}
+          style={{
+            background: "radial-gradient(circle at center, var(--glow), transparent 70%)",
+            left: `${mousePos.x - 10}%`,
+            bottom: `${100 - mousePos.y - 10}%`,
+            transition: "left 0.4s ease-out, bottom 0.4s ease-out",
+          }}
+        />
         <div className={style.grid2}>
           <div>
             <div className={style.badge}>
@@ -126,7 +176,7 @@ export default function Landing() {
               Três agentes de IA analisam clima, consumo e armazenamento em tempo real. Você recebe uma recomendação direta em linguagem natural — sem gráficos, sem confusão.
             </p>
 
-            <div className={style.flexColSmRow}>
+            <div className={style.flexColSmRow + " reveal-on-scroll opacity-0 translate-y-6 [&.revealed]:opacity-100 [&.revealed]:translate-y-0 transition-all duration-700"}>
               <button
                 onClick={() => navigate("/onboarding")}
                 className={style.btnAction}
@@ -142,7 +192,7 @@ export default function Landing() {
               </a>
             </div>
 
-            <div className={style.statsRow}>
+            <div className={style.statsRow + " reveal-on-scroll opacity-0 translate-y-6 [&.revealed]:opacity-100 [&.revealed]:translate-y-0 transition-all duration-700 delay-200"}>
               {[
                 { value: "38+", label: "kWh analisados/dia" },
                 { value: "3", label: "agentes ativos" },
@@ -160,14 +210,14 @@ export default function Landing() {
         </div>
       </section>
 
-      <section id="como-funciona" className={style.section}>
+      <section id="como-funciona" className={style.section + " reveal-on-scroll opacity-0 translate-y-8 [&.revealed]:opacity-100 [&.revealed]:translate-y-0 transition-all duration-700"}>
         <div className={style.container}>
           <div className={style.titleSection}>
             <div className={style.textMonoTitle}>Processo</div>
-            <h2 className={style.title}>Três passos, uma resposta</h2>
+            <h2 className={style.title + " " + style.floatAnimSlow}>Três passos, uma resposta</h2>
           </div>
 
-          <div className={style.grid3}>
+          <div className={style.grid3 + " " + style.staggerGroup}>
             {[
               {
                 step: "01",
@@ -188,7 +238,7 @@ export default function Landing() {
                 desc: "Nada de gráfico. O orquestrador sintetiza tudo numa frase clara e acionável para você decidir agora.",
               },
             ].map((item) => (
-              <div key={item.step} className={style.cardRelative}>
+              <div key={item.step} className={style.cardRelative + " " + style.glowCardHover + " " + style.glowCardActive}>
                 <div className={style.textStep}>
                   {item.step}
                 </div>
@@ -203,7 +253,7 @@ export default function Landing() {
         </div>
       </section>
 
-      <section id="agentes" className={style.section}>
+      <section id="agentes" className={style.section + " reveal-on-scroll opacity-0 translate-y-8 [&.revealed]:opacity-100 [&.revealed]:translate-y-0 transition-all duration-700 delay-100"}>
         <div className={style.container}>
           <div className={style.grid2}>
             <div>
@@ -215,7 +265,7 @@ export default function Landing() {
                 Cada agente tem uma especialidade distinta. O orquestrador ouve os três e entrega uma recomendação única — transparente e rastreável.
               </p>
 
-              <div className={style.spaceY4}>
+              <div className={style.spaceY4 + " " + style.staggerGroup}>
                 {[
                   {
                     icon: <Sun size={16} className={style.textPrimary} />,
@@ -235,8 +285,8 @@ export default function Landing() {
                     desc: "Estado da bateria, taxa de carga/descarga e autonomia disponível",
                     color: "bg-accent/10 border-accent/20",
                   },
-                ].map((agent) => (
-                  <div key={agent.name} className={style.agentCard(agent.color)}>
+                  ].map((agent) => (
+                  <div key={agent.name} className={style.agentCard(agent.color) + " " + style.glowCardHover}>
                     <div className={style.iconBoxSm}>
                       {agent.icon}
                     </div>
@@ -279,21 +329,26 @@ export default function Landing() {
         </div>
       </section>
 
-      <section id="beneficios" className={style.section}>
+
+      <section id="beneficios" className={style.section + " reveal-on-scroll opacity-0 translate-y-8 [&.revealed]:opacity-100 [&.revealed]:translate-y-0 transition-all duration-700 delay-200"}>
         <div className={style.container}>
           <div className={style.titleSection}>
             <div className={style.textMonoTitle}>Por que Solaris Potiguar?</div>
+          </div>
+          <section className="py-16 px-6">
+            <LandscapeCarousel />
+          </section>
+          <div className={style.titleSection}>
             <h2 className={style.title}>Feito para o sertão do RN</h2>
           </div>
-
-          <div className={style.grid4}>
+          <div className={style.grid4 + " " + style.staggerGroup}>
             {[
               { icon: <Sun size={18} className={style.textPrimary} />, title: "Clima local", desc: "Dados de irradiância específicos para o semiárido nordestino" },
               { icon: <Zap size={18} className={style.textAccent} />, title: "Sem gráficos", desc: "Recomendação direta. O que fazer agora, em português claro" },
               { icon: <Battery size={18} className={style.textBlue} />, title: "Offline-first", desc: "Funciona mesmo com conexão instável no interior" },
               { icon: <BarChart2 size={18} className={style.textYellow} />, title: "Histórico", desc: "Acompanhe o padrão de decisões e a economia acumulada" },
             ].map((b) => (
-              <div key={b.title} className={style.cardHover}>
+              <div key={b.title} className={style.cardHover + " " + style.glowCardHover + " " + style.glowCardActive}>
                 <div className={style.iconBoxLg}>
                   {b.icon}
                 </div>
@@ -305,9 +360,9 @@ export default function Landing() {
         </div>
       </section>
 
-      <section className={style.section}>
+      <section className={style.section + " reveal-on-scroll opacity-0 translate-y-8 [&.revealed]:opacity-100 [&.revealed]:translate-y-0 transition-all duration-700 delay-300"}>
         <div className={style.containerXs}>
-          <div className={style.iconBoxPrimaryCircle}>
+          <div className={style.iconBoxPrimaryCircle + " " + style.floatAnim}>
             <Sun size={24} className={style.textPrimary} />
           </div>
           <h2 className={style.titleSm}>Pronto para gerenciar com inteligência?</h2>
@@ -330,12 +385,12 @@ export default function Landing() {
             <div className={style.iconBoxFooter}>
               <Sun size={10} className={style.textPrimary} />
             </div>
-            <span>Solaris Potiguar · Rio Grande do Norte</span>
+            <span className={style.footerLink}>Solaris Potiguar · Rio Grande do Norte</span>
           </div>
           <div className={style.footerLinks}>
-            <span>Clima: Open-Meteo API</span>
-            <span>IA: Multi-agent LLM</span>
-            <span>AMD Hackathon MVP 2026</span>
+            <span className={style.footerLink}>Clima: Open-Meteo API</span>
+            <span className={style.footerLink}>IA: Multi-agent LLM</span>
+            <span className={style.footerLink}>AMD Hackathon MVP 2026</span>
           </div>
         </div>
       </footer>
