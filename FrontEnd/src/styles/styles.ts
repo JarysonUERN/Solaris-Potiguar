@@ -62,6 +62,7 @@ export const style = {
   iconBoxSm: "w-8 h-8 rounded-md bg-secondary flex items-center justify-center flex-shrink-0",
   iconBoxLg: "w-9 h-9 rounded-lg bg-secondary flex items-center justify-center mb-3",
   iconBoxPrimary: "w-8 h-8 rounded-lg bg-primary/15 flex items-center justify-center flex-shrink-0 mt-0.5",
+  iconBoxPurple: "w-8 h-8 rounded-lg bg-purple-500/15 flex items-center justify-center flex-shrink-0 mt-0.5",
   iconBoxYellow: "w-8 h-8 rounded-lg bg-yellow-400/15 flex items-center justify-center flex-shrink-0 mt-0.5",
   iconBoxAccent: "w-8 h-8 rounded-lg bg-accent/15 flex items-center justify-center flex-shrink-0 mt-0.5",
   iconBoxBlue: "w-8 h-8 rounded-lg bg-blue-500/15 flex items-center justify-center flex-shrink-0 mt-0.5",
@@ -85,6 +86,7 @@ export const style = {
   textForeground: "text-foreground",
   textPrimary: "text-primary",
   textAccent: "text-accent",
+  textGreen: "text-accent-green",
   textBlue: "text-blue-400",
   textYellow: "text-yellow-400",
   textSm: "text-sm text-muted-foreground",
@@ -144,6 +146,7 @@ export const style = {
   footerInner: "max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-muted-foreground",
   footerBrand: "flex items-center gap-2",
   footerLinks: "flex gap-6",
+  footerLink: "cursor-default transition-all duration-300 hover:text-foreground hover:scale-105 hover:drop-shadow-[0_0_6px_var(--glow-strong)]",
 
   spaceY2: "space-y-2",
   spaceY4: "space-y-4",
@@ -213,4 +216,21 @@ export const style = {
   badgeAgent: (color: string) => `text-[10px] font-mono font-bold px-1.5 py-0.5 rounded border ${color}`,
 
   containerSmSpaceY5: "max-w-3xl mx-auto px-6 py-8 space-y-5",
+
+  glowContainer: "relative overflow-hidden",
+  glowOverlay: "pointer-events-none absolute inset-0 -z-10 transition-all duration-700",
+  glowCardHover: "hover:-translate-y-1 hover:shadow-[var(--glow-card-hover)] transition-all duration-300",
+  glowCardActive: "active:scale-[0.98]",
+  heroGlow: "absolute -top-40 -right-40 w-96 h-96 rounded-full opacity-30 blur-[120px] pointer-events-none transition-colors duration-700",
+  heroGlowLeft: "absolute -bottom-40 -left-40 w-80 h-80 rounded-full opacity-20 blur-[100px] pointer-events-none transition-colors duration-700",
+  mouseGlow: "pointer-events-none absolute inset-0 -z-10 transition-opacity duration-300 opacity-0 group-hover:opacity-100",
+  navBlur: "border-b border-border bg-background/80 backdrop-blur-md",
+
+  floatAnim: "animate-[float_4s_ease-in-out_infinite]",
+  floatAnimSlow: "animate-[float_6s_ease-in-out_infinite]",
+  fadeInUp: "animate-[fade-in-up_0.6s_ease-out_both]",
+  fadeInUpDelay1: "animate-[fade-in-up_0.6s_ease-out_0.15s_both]",
+  fadeInUpDelay2: "animate-[fade-in-up_0.6s_ease-out_0.3s_both]",
+  fadeInUpDelay3: "animate-[fade-in-up_0.6s_ease-out_0.45s_both]",
+  staggerGroup: "[&>*]:animate-[fade-in-up_0.5s_ease-out_both] [&>*:nth-child(1)]:[animation-delay:0s] [&>*:nth-child(2)]:[animation-delay:0.1s] [&>*:nth-child(3)]:[animation-delay:0.2s] [&>*:nth-child(4)]:[animation-delay:0.3s]",
 };
