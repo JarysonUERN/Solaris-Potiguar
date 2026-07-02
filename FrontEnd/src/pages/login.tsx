@@ -1,8 +1,9 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowRight, Lock, Mail, Eye, EyeOff, Sun } from "lucide-react";
-import ThemeToggle from "../components/ThemeToggle.js";
+import { ArrowRight, Lock, Mail, Eye, EyeOff, Sun, Moon } from "lucide-react";
 import { style } from "../styles/styles.js";
+import { useTheme } from "../hooks/useTheme.js";
+import homeIcon from "../assets/icons/home-1-svgrepo-com.svg";
 
 const mockCredentials = {
   email: "demo@solaris.com",
@@ -16,6 +17,7 @@ export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { isLight, toggle } = useTheme();
 
   useEffect(() => {
     const savedSession = localStorage.getItem("solaris-auth");
@@ -54,14 +56,19 @@ export default function Login() {
 
   return (
     <div className={style.pageFlex}>
-      <header className={style.headerFlexBetween}>
-        <button onClick={() => navigate("/")} className={style.flexCenter}>
+      <header className="border-b border-border px-6 py-4 flex items-center justify-center relative">
+        <button
+          onClick={() => navigate("/")}
+          className="absolute left-6 flex items-center justify-center w-7 h-7 rounded-md hover:bg-secondary/50 transition-colors"
+        >
+          <img src={homeIcon} alt="Home" className="w-5 h-5" />
+        </button>
+        <button onClick={toggle} className={style.flexCenter}>
           <div className={style.iconBoxTiny}>
-            <Sun size={12} className={style.textPrimary} />
+            {isLight ? <Moon size={12} className={style.textPrimary} /> : <Sun size={12} className={style.textPrimary} />}
           </div>
           <span className={style.logoText}>Solaris Potiguar</span>
         </button>
-        <ThemeToggle size={13} />
       </header>
 
       <div className={style.flexCenterFull}>
@@ -133,6 +140,16 @@ export default function Login() {
             <div className="mt-6 rounded-lg border border-border bg-secondary/40 p-3 text-center text-sm text-muted-foreground">
               Credenciais de demo: <span className="font-medium text-foreground">demo@solaris.com</span> / <span className="font-medium text-foreground">123456</span>
             </div>
+
+            <p className="mt-6 text-center text-xs text-muted-foreground">
+              Ainda não tem conta?{" "}
+              <button
+                onClick={() => navigate("/register")}
+                className="font-medium text-primary hover:text-primary/80 underline underline-offset-2 transition-colors"
+              >
+                Criar cadastro
+              </button>
+            </p>
           </div>
         </div>
       </div>
