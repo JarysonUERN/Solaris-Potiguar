@@ -13,11 +13,12 @@ interface Slide {
   body: React.ReactNode;
   img: string;
   iconBg: string;
+  labelClassName: string;
 }
 
 const slides: Slide[] = [
   {
-    icon: <Brain size={14} className={style.textPrimary} />,
+    icon: <Brain size={14} className={"text-purple-400"} />,
     label: "Orquestrador · agora",
     body: (
       <>
@@ -26,7 +27,8 @@ const slides: Slide[] = [
       </>
     ),
     img: orchestratorImg,
-    iconBg: style.iconBoxPrimary,
+    iconBg: style.iconBoxPurple,
+    labelClassName: "text-purple-400",
   },
   {
     icon: <Sun size={14} className="text-yellow-400" />,
@@ -34,6 +36,7 @@ const slides: Slide[] = [
     body: '"Irradiância solar em 847 W/m². Nuvens esparsas previstas após 16h com redução estimada de 18%. Geração excedente disponível para armazenamento."',
     img: solarImg,
     iconBg: style.iconBoxYellow,
+    labelClassName: "text-yellow-400",
   },
   {
     icon: <Battery size={14} className={style.textAccent} />,
@@ -41,6 +44,7 @@ const slides: Slide[] = [
     body: '"Bateria em 67% (8,0/12 kWh). Taxa de carga ideal. Capacidade suficiente para cobrir o pico noturno sem recorrer à rede."',
     img: storageImg,
     iconBg: style.iconBoxAccent,
+    labelClassName: "text-accent",
   },
   {
     icon: <Zap size={14} className="text-blue-400" />,
@@ -48,6 +52,7 @@ const slides: Slide[] = [
     body: '"Consumo atual 2,3 kW, 31% abaixo da geração. Pico noturno projetado 4,1 kW entre 19h-22h. Excedente direcionado para bateria."',
     img: consumptionImg,
     iconBg: style.iconBoxBlue,
+    labelClassName: "text-blue-400",
   },
 ];
 
@@ -68,7 +73,7 @@ export default function HeroCarousel() {
       <div className="flex items-center gap-2">
         <button
           onClick={() => setActive((prev) => (prev - 1 + slides.length) % slides.length)}
-          className="w-8 h-8 rounded-full bg-background/60 backdrop-blur flex items-center justify-center hover:bg-background/80 transition-all text-muted-foreground hover:text-foreground flex-shrink-0"
+          className="w-8 h-8 rounded-full bg-background/60 backdrop-blur flex items-center justify-center hover:bg-background/80 hover:scale-110 hover:shadow-[var(--glow-card)] transition-all text-muted-foreground hover:text-foreground flex-shrink-0 active:scale-95"
         >
           <ChevronLeft size={14} />
         </button>
@@ -86,7 +91,12 @@ export default function HeroCarousel() {
                 {current.icon}
               </div>
               <div>
-                <div className={style.textResultMuted}>{current.label}</div>
+                <div className={`text-[9px] font-semibold uppercase tracking-[0.2em] ${current.labelClassName} mb-1`}>
+                  {current.label.split(" · ")[0]}
+                  <span className="text-[9px] font-normal uppercase tracking-[0.2em] text-muted-foreground">
+                    {current.label.includes(" · ") ? ` · ${current.label.split(" · ")[1]}` : ""}
+                  </span>
+                </div>
                 <p className={style.textSmLeading}>{current.body}</p>
               </div>
             </div>
@@ -94,7 +104,7 @@ export default function HeroCarousel() {
         </div>
         <button
           onClick={() => setActive((prev) => (prev + 1) % slides.length)}
-          className="w-8 h-8 rounded-full bg-background/60 backdrop-blur flex items-center justify-center hover:bg-background/80 transition-all text-muted-foreground hover:text-foreground flex-shrink-0"
+          className="w-8 h-8 rounded-full bg-background/60 backdrop-blur flex items-center justify-center hover:bg-background/80 hover:scale-110 hover:shadow-[var(--glow-card)] transition-all text-muted-foreground hover:text-foreground flex-shrink-0 active:scale-95"
         >
           <ChevronRight size={14} />
         </button>
@@ -105,10 +115,10 @@ export default function HeroCarousel() {
           <button
             key={i}
             onClick={() => setActive(i)}
-            className={`rounded-full transition-all ${
+            className={`rounded-full transition-all duration-300 ${
               i === active
-                ? "w-6 h-2 bg-purple-500"
-                : "w-2 h-2 bg-muted-foreground/40 hover:bg-muted-foreground/60"
+                ? "w-6 h-2 bg-purple-500 shadow-[0_0_8px_rgba(168,85,247,0.5)]"
+                : "w-2 h-2 bg-muted-foreground/40 hover:bg-muted-foreground/60 hover:scale-125"
             }`}
           />
         ))}
