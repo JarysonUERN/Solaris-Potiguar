@@ -37,6 +37,50 @@
   --sidebar-accent-foreground: #E8EDF3;
   --sidebar-border: rgba(255, 255, 255, 0.07);
   --sidebar-ring: #F59E0B;
+  --glow: rgba(59, 130, 246, 0.15);
+  --glow-strong: rgba(59, 130, 246, 0.25);
+  --glow-card: 0 4px 24px rgba(59, 130, 246, 0.08);
+  --glow-card-hover: 0 8px 40px rgba(59, 130, 246, 0.15);
+}
+
+html.light {
+  --background: #FFFFFF;
+  --foreground: #0B0F14;
+  --card: #F8F9FA;
+  --card-foreground: #0B0F14;
+  --popover: #FFFFFF;
+  --popover-foreground: #0B0F14;
+  --primary: #F59E0B;
+  --primary-foreground: #FFFFFF;
+  --secondary: #F0F2F5;
+  --secondary-foreground: #374151;
+  --muted: #F3F4F6;
+  --muted-foreground: #6B7280;
+  --accent: #10B981;
+  --accent-foreground: #FFFFFF;
+  --destructive: #EF4444;
+  --destructive-foreground: #FFFFFF;
+  --border: rgba(0, 0, 0, 0.08);
+  --input-background: #FFFFFF;
+  --switch-background: #D1D5DB;
+  --ring: #F59E0B;
+  --chart-1: #F59E0B;
+  --chart-2: #10B981;
+  --chart-3: #3B82F6;
+  --chart-4: #8B5CF6;
+  --chart-5: #EC4899;
+  --sidebar: #FFFFFF;
+  --sidebar-foreground: #0B0F14;
+  --sidebar-primary: #F59E0B;
+  --sidebar-primary-foreground: #FFFFFF;
+  --sidebar-accent: #F0F2F5;
+  --sidebar-accent-foreground: #0B0F14;
+  --sidebar-border: rgba(0, 0, 0, 0.08);
+  --sidebar-ring: #F59E0B;
+  --glow: rgba(245, 158, 11, 0.15);
+  --glow-strong: rgba(245, 158, 11, 0.25);
+  --glow-card: 0 4px 24px rgba(245, 158, 11, 0.08);
+  --glow-card-hover: 0 8px 40px rgba(245, 158, 11, 0.15);
 }
 
 @theme inline {
@@ -78,6 +122,23 @@
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
+  --color-glow: var(--glow);
+  --color-glow-strong: var(--glow-strong);
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+@keyframes fade-in-up {
+  from { opacity: 0; transform: translateY(24px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { opacity: 0.5; transform: scale(1); }
+  50% { opacity: 0.8; transform: scale(1.05); }
 }
 
 @layer base {
