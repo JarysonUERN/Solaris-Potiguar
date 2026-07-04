@@ -122,7 +122,7 @@ Instead of technical charts, users receive practical guidance that supports bett
 
 ---
 
-# 📦 Project Structure
+#  Project Structure
 
 ```
 Solaris-Potiguar/
@@ -231,6 +231,76 @@ The AMD ecosystem makes enterprise-grade AI accessible to applications that serv
 
 > Every day, thousands of small rural producers in Northeast Brazil make energy decisions manually. Solaris Potiguar brings AI-powered decision support to these producers by combining weather forecasts, operational context, and multi-agent reasoning accelerated by AMD infrastructure. Instead of expensive enterprise software, Solaris delivers simple recommendations that help producers make better use of their own solar energy.
 
+---
+
+# How to Run with Docker
+
+## Prerequisites
+
+- [Docker](https://docs.docker.com/get-docker/) and [Docker Compose](https://docs.docker.com/compose/install/) installed
+- `BackEnd/config/master.key` file present (Rails master key)
+
+## Environment Variables
+
+Copy the example file and fill in the variables:
+
+```bash
+cp .env.example .env
+```
+
+Expected content of `.env`:
+
+```env
+RAILS_MASTER_KEY=<content of config/master.key>
+FIREWORKS_API_KEY=<your Fireworks AI key>
+```
+
+## Starting the Services
+
+```bash
+# Build and start all services
+docker compose up --build
+
+# Run in the background (detached)
+docker compose up --build -d
+
+# Stop the services
+docker compose down
+
+# Stop and remove volumes (database data)
+docker compose down -v
+```
+
+## Accessing the Application
+
+| Service  | URL                          |
+|----------|------------------------------|
+| Frontend | http://localhost             |
+| Backend  | http://localhost:3000        |
+| Database | localhost:5432 (postgres/postgres) |
+
+The Nginx instance in the frontend container automatically proxies calls to `/api/`, `/solaris_potiguar/`, and `/up` to the backend.
+
+## Useful Commands
+
+```bash
+# View logs for a specific service
+docker compose logs -f backend
+docker compose logs -f frontend
+docker compose logs -f db
+
+# Run commands in the backend
+docker compose exec backend rails db:migrate
+docker compose exec backend rails db:seed
+docker compose exec backend rails console
+
+# Run commands in the frontend
+docker compose exec frontend sh
+
+# Rebuild a specific service
+docker compose build backend
+docker compose build frontend
+```
 ---
 
 ## Developed for the **AMD Hackathon 2026 – Unicorn Track**.
