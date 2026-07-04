@@ -83,7 +83,7 @@ module Api
 
     def build_agent_context(property, climate, energy, classification)
       {
-        installed_capacity_kwp: property.installed_capacity_kwp,
+        installed_power_kwp: property.installed_power_kwp,
         has_battery: property.has_battery,
         battery_capacity_kwh: property.battery_capacity_kwh,
         battery_charge_kwh: energy[:battery_charge_kwh],
@@ -96,7 +96,7 @@ module Api
         temperature: climate[:temperature],
         classification: classification[:code],
         savings_currency: energy[:savings_currency],
-        business_type: property.business_type
+        business_type: property.operation_type
       }
     end
   end
