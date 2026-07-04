@@ -97,7 +97,7 @@ export default function Landing() {
                   Entrar
                 </button>
                 <button
-                  onClick={() => navigate("/onboarding")}
+                  onClick={() => navigate("/register")}
                   className={style.btnPrimarySm}
                 >
                   Começar grátis
@@ -129,7 +129,7 @@ export default function Landing() {
                 </button>
               </>
             ) : (
-              <button onClick={() => navigate("/onboarding")} className={style.btnPrimaryFull}>
+              <button onClick={() => navigate("/register")} className={style.btnPrimaryFull}>
                 Começar grátis
               </button>
             )}
@@ -178,7 +178,7 @@ export default function Landing() {
 
             <div className={style.flexColSmRow + " reveal-on-scroll opacity-0 translate-y-6 [&.revealed]:opacity-100 [&.revealed]:translate-y-0 transition-all duration-700"}>
               <button
-                onClick={() => navigate("/onboarding")}
+                onClick={() => navigate(isLoggedIn ? "/onboarding" : "/register")}
                 className={style.btnAction}
               >
                 Configurar minha propriedade
@@ -370,7 +370,7 @@ export default function Landing() {
             Configure sua propriedade em menos de 2 minutos e receba sua primeira análise hoje.
           </p>
           <button
-            onClick={() => navigate("/onboarding")}
+            onClick={() => navigate(isLoggedIn ? "/onboarding" : "/register")}
             className={style.btnPrimaryLg}
           >
             Começar agora, gratuitamente

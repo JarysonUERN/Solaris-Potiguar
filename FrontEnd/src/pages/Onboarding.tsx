@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { 
   Sun, MapPin, CircleAlert, ChevronLeft, ChevronRight, 
@@ -7,6 +7,7 @@ import {
 
 import type { PropertyConfig, Profile, LoadCurve } from "../types/index.js";
 import { style } from "../styles/styles.js";
+import { submitOnboarding } from "../services/api.js";
 
 
 const profiles = [
@@ -48,6 +49,13 @@ const loadCurves: Record<Profile, LoadCurve> = {
 export default function Onboarding() {
   const navigate = useNavigate();
   const [step, setStep] = useState(0);
+
+  useEffect(() => {
+    const raw = localStorage.getItem("solaris-auth");
+    if (!raw) {
+      navigate("/login", { replace: true });
+    }
+  }, [navigate]);
   const [config, setConfig] = useState<PropertyConfig>({
     name: "",
     city: "",
@@ -73,9 +81,35 @@ export default function Onboarding() {
     return false;
   };
 
-  const handleNext = () => {
-    if (step < 3) setStep(step + 1);
-    else navigate("/dashboard", { state: { config } });
+  const handleNext = async () => {
+    if (step < 3) {
+      setStep(step + 1);
+      return;
+    }
+
+    try {
+      const res = await submitOnboarding({
+        farm_name: config.name,
+        city: config.city,
+        installed_power_kwp: parseFloat(config.capacity) || 0,
+        has_battery: parseFloat(config.storage) > 0,
+        battery_capacity_kwh: parseFloat(config.storage) || 0,
+        average_monthly_consumption_kwh: parseFloat(config.consumption) || 0,
+        operation_type: config.profile,
+        operation_description: config.routine,
+      });
+
+      const existing = localStorage.getItem("solaris-auth");
+      if (existing) {
+        const session = JSON.parse(existing);
+        session.property_id = res.property_id;
+        localStorage.setItem("solaris-auth", JSON.stringify(session));
+      }
+
+      navigate("/dashboard", { state: { config, property_id: res.property_id } });
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Erro ao salvar configuração.");
+    }
   };
 
   return (

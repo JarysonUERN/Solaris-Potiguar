@@ -1,8 +1,9 @@
 import { useState, type FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
-import { User, Mail, Phone, CreditCard, Check, ArrowRight, Sun } from "lucide-react";
+import { User, Mail, Phone, CreditCard, Lock, Check, ArrowRight, Sun } from "lucide-react";
 import ThemeToggle from "../components/ThemeToggle.js";
 import { style } from "../styles/styles.js";
+import { register, login } from "../services/api.js";
 
 export default function Register() {
   const navigate = useNavigate();
@@ -11,6 +12,7 @@ export default function Register() {
   const [phone, setPhone] = useState("");
   const [hasWhatsApp, setHasWhatsApp] = useState(true);
   const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -29,12 +31,17 @@ export default function Register() {
       .replace(/(\d{5})(\d)/, "$1-$2");
   };
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setError("");
 
-    if (!name.trim() || !cpf.trim() || !phone.trim() || !email.trim()) {
+    if (!name.trim() || !cpf.trim() || !phone.trim() || !email.trim() || !password.trim()) {
       setError("Preencha todos os campos para continuar.");
+      return;
+    }
+
+    if (password.length < 6) {
+      setError("A senha deve ter pelo menos 6 caracteres.");
       return;
     }
 
@@ -55,19 +62,35 @@ export default function Register() {
 
     setIsSubmitting(true);
 
-    const user = {
-      name: name.trim(),
-      cpf: cpf.replace(/\D/g, ""),
-      phone: phone.replace(/\D/g, ""),
-      email: email.trim().toLowerCase(),
-      registeredAt: new Date().toISOString(),
-    };
+    try {
+      await register({
+        full_name: name.trim(),
+        cpf: cpf.replace(/\D/g, ""),
+        phone: phone.replace(/\D/g, ""),
+        has_whatsapp: hasWhatsApp,
+        email: email.trim().toLowerCase(),
+        password,
+      });
 
-    localStorage.setItem("solaris-auth", JSON.stringify(user));
+      const auth = await login(email.trim().toLowerCase(), password);
 
-    window.setTimeout(() => {
+      localStorage.setItem(
+        "solaris-auth",
+        JSON.stringify({
+          token: auth.token,
+          email: auth.email,
+          full_name: auth.full_name,
+        })
+      );
+
       navigate("/onboarding");
-    }, 400);
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : "Erro ao criar conta. Tente novamente."
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -88,7 +111,7 @@ export default function Register() {
             <div className="mb-6 text-center">
               <div className={style.badge}>
                 <Sun size={12} />
-                Cadastro · Mock local
+                Criar sua conta
               </div>
               <h1 className={style.title2xl}>Criar sua conta</h1>
               <p className={style.textSmMutedTop}>
@@ -166,6 +189,20 @@ export default function Register() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="seu@email.com"
+                    className={style.inputIcon}
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className={style.label}>Senha</label>
+                <div className="relative">
+                  <Lock size={15} className={style.inputIconPos} />
+                  <input
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="Mínimo de 6 caracteres"
                     className={style.inputIcon}
                   />
                 </div>

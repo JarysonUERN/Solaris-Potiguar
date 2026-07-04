@@ -3,12 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { ArrowRight, Lock, Mail, Eye, EyeOff, Sun, Moon } from "lucide-react";
 import { style } from "../styles/styles.js";
 import { useTheme } from "../hooks/useTheme.js";
+import { login } from "../services/api.js";
 import homeIcon from "../assets/icons/home-1-svgrepo-com.svg";
-
-const mockCredentials = {
-  email: "demo@solaris.com",
-  password: "123456",
-};
 
 export default function Login() {
   const navigate = useNavigate();
@@ -26,7 +22,7 @@ export default function Login() {
     }
   }, [navigate]);
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setError("");
 
@@ -35,23 +31,28 @@ export default function Login() {
       return;
     }
 
-    if (email.trim().toLowerCase() !== mockCredentials.email || password !== mockCredentials.password) {
-      setError("Credenciais inválidas. Use demo@solaris.com / 123456.");
-      return;
-    }
-
     setIsSubmitting(true);
 
-    const session = {
-      email: email.trim().toLowerCase(),
-      loggedAt: new Date().toISOString(),
-    };
+    try {
+      const data = await login(email.trim().toLowerCase(), password);
 
-    localStorage.setItem("solaris-auth", JSON.stringify(session));
+      localStorage.setItem(
+        "solaris-auth",
+        JSON.stringify({
+          token: data.token,
+          email: data.email,
+          full_name: data.full_name,
+        })
+      );
 
-    window.setTimeout(() => {
       navigate("/dashboard");
-    }, 400);
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : "Erro ao fazer login. Tente novamente."
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -77,11 +78,11 @@ export default function Login() {
             <div className="mb-6 text-center">
               <div className={style.badge}>
                 <Sun size={12} />
-                Acesso seguro · Mock local
+                Acesso seguro
               </div>
               <h1 className={style.title2xl}>Entrar na sua conta</h1>
               <p className={style.textSmMutedTop}>
-                Acesse o painel com um fluxo de autenticação simulado para o MVP.
+                Acesse o painel para gerenciar sua propriedade.
               </p>
             </div>
 
@@ -137,10 +138,6 @@ export default function Login() {
               </button>
             </form>
 
-            <div className="mt-6 rounded-lg border border-border bg-secondary/40 p-3 text-center text-sm text-muted-foreground">
-              Credenciais de demo: <span className="font-medium text-foreground">demo@solaris.com</span> / <span className="font-medium text-foreground">123456</span>
-            </div>
-
             <p className="mt-6 text-center text-xs text-muted-foreground">
               Ainda não tem conta?{" "}
               <button
@@ -156,5 +153,3 @@ export default function Login() {
     </div>
   );
 }
-
-
