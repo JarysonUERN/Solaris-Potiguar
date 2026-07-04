@@ -1,7 +1,6 @@
 import { Moon, Sun } from "lucide-react";
-import { FaRegSun } from "react-icons/fa6"; //replace
 import { useTheme } from "../hooks/useTheme.js";
-
+import { FaSun } from "react-icons/fa";
 interface ThemeToggleProps {
   size?: number;
   className?: string;
@@ -23,7 +22,7 @@ export default function ThemeToggle({
 
   return (
     <button onClick={toggle} className={`${isLight ? bgLight : bgDark} ${className}`}>
-      {isLight ? <Moon size={size} className={iconLight} /> : <FaRegSun size={size} className={iconDark} />}
+      {isLight ? <Moon size={size} className={iconLight} /> : <FaSun size={size} className={iconDark} />}
     </button>
   );
 }
