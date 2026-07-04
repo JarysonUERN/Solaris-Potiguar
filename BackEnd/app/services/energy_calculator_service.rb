@@ -28,7 +28,7 @@ class EnergyCalculatorService
 
   def estimated_generation
     irradiation = @climate[:solar_irradiation] || 0
-    capacity = @property.installed_capacity_kwp
+    capacity = @property.installed_power_kwp
     capacity * irradiation * SYSTEM_EFFICIENCY
   end
 

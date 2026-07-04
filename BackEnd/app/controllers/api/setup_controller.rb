@@ -28,21 +28,28 @@ module Api
 
     def property_params
       params.require(:property).permit(
-        :location, :latitude, :longitude,
-        :installed_capacity_kwp, :has_battery, :battery_capacity_kwh,
-        :average_daily_consumption_kwh, :business_type
+        :farm_name, :city, :latitude, :longitude,
+        :installed_power_kwp, :has_battery, :battery_capacity_kwh,
+        :average_daily_consumption_kwh, :operation_type,
+        :peak_consumption_period, :flexible_operation,
+        main_equipments: [], :operation_description
       )
     end
 
     def serialize_property(property)
       {
         id: property.id,
-        location: property.location,
-        installed_capacity_kwp: property.installed_capacity_kwp.to_f,
+        farm_name: property.farm_name,
+        city: property.city,
+        installed_power_kwp: property.installed_power_kwp.to_f,
         has_battery: property.has_battery,
         battery_capacity_kwh: property.battery_capacity_kwh.to_f,
         average_daily_consumption_kwh: property.average_daily_consumption_kwh.to_f,
-        business_type: property.business_type,
+        operation_type: property.operation_type,
+        peak_consumption_period: property.peak_consumption_period,
+        flexible_operation: property.flexible_operation,
+        main_equipments: property.main_equipments,
+        operation_description: property.operation_description,
         latitude: property.latitude&.to_f,
         longitude: property.longitude&.to_f,
         created_at: property.created_at,

@@ -13,7 +13,7 @@ module Api
 
       render json: {
         property_id: property.id,
-        location: property.location,
+        city: property.city,
         climate: data
       }
     rescue => e

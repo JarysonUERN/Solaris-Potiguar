@@ -10,7 +10,7 @@ class GenerationAgentService < BaseAgentService
 
   def user_prompt
     "Dados do sistema:\n" \
-    "- Capacidade instalada: #{@context[:installed_capacity_kwp]} kWp\n" \
+    "- Capacidade instalada: #{@context[:installed_power_kwp]} kWp\n" \
     "- Geração estimada: #{@context[:generation_kwh]} kWh\n" \
     "- Irradiação solar: #{@context[:solar_irradiation]} kWh/m²\n" \
     "- Nebulosidade: #{@context[:cloud_cover]}%\n" \

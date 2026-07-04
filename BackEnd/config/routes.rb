@@ -1,6 +1,16 @@
 Rails.application.routes.draw do
   get "up" => "rails/health#show", as: :rails_health_check
 
+  namespace :solaris_potiguar do
+    post "login",    to: "auth#login"
+    post "register", to: "auth#register"
+
+    get  "user",     to: "users#show"
+    put  "user",     to: "users#update"
+
+    post "onboarding", to: "onboarding#create"
+  end
+
   namespace :api do
     resources :setup, only: [:create, :show, :update], controller: "setup", param: :id
 
