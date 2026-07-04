@@ -1,22 +1,20 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-// Importações corrigidas com ícones existentes
 import { 
-  FaSun, FaLocationDot, FaCircleExclamation, FaChevronLeft, FaChevronRight, 
-  FaCheck, FaDroplet, FaStore, FaHouse, FaIndustry,
-} from "react-icons/fa6";
-import { PiBirdBold } from "react-icons/pi";
+  Sun, MapPin, CircleAlert, ChevronLeft, ChevronRight, 
+  Check, Droplet, Store, House, Factory, Bird, FileText,
+} from "lucide-react";
 
 import type { PropertyConfig, Profile, LoadCurve } from "../types/index.js";
 import { style } from "../styles/styles.js";
 
 
 const profiles = [
-  { value: "irrigacao", icon: FaDroplet, label: "Irrigação agrícola", description: "Pico de consumo durante o dia para bombas", color: "text-blue-400" },
-  { value: "avicultura", icon: PiBirdBold, label: "Avicultura / pecuária", description: "Consumo contínuo e relativamente estável", color: "text-yellow-400" }, // Corrigido
-  { value: "comercio", icon: FaStore, label: "Comércio rural", description: "Pico no horário comercial, baixo à noite", color: "text-accent" },
-  { value: "residencial", icon: FaHouse, label: "Residencial rural", description: "Pico manhã e noite, baixo durante o dia", color: "text-green-400" },
-  { value: "agroindustria", icon: FaIndustry, label: "Agroindústria", description: "Consumo alto e constante em horário de produção", color: "text-purple-400" }, // Corrigido para FaIndustry
+  { value: "irrigacao", icon: Droplet, label: "Irrigação agrícola", description: "Pico de consumo durante o dia para bombas", color: "text-blue-400" },
+  { value: "avicultura", icon: Bird, label: "Avicultura / pecuária", description: "Consumo contínuo e relativamente estável", color: "text-yellow-400" },
+  { value: "comercio", icon: Store, label: "Comércio rural", description: "Pico no horário comercial, baixo à noite", color: "text-accent" },
+  { value: "residencial", icon: House, label: "Residencial rural", description: "Pico manhã e noite, baixo durante o dia", color: "text-green-400" },
+  { value: "agroindustria", icon: Factory, label: "Agroindústria", description: "Consumo alto e constante em horário de produção", color: "text-purple-400" },
 ] as const;
 
 const loadCurves: Record<Profile, LoadCurve> = {
@@ -57,23 +55,26 @@ export default function Onboarding() {
     storage: "",
     consumption: "",
     profile: "residencial",
+    routine: "",
   });
 
   const steps = [
     { title: "Sua propriedade", subtitle: "Como você chama e onde fica?" },
     { title: "Sistema solar", subtitle: "Capacidade instalada de geração e armazenamento" },
     { title: "Perfil de consumo", subtitle: "Selecione o perfil que mais se aproxima do seu uso" },
+    { title: "Rotina de consumo", subtitle: "Descreva como sua operação consome energia" },
   ];
 
   const canAdvance = () => {
     if (step === 0) return config.name.trim() && config.city.trim();
     if (step === 1) return config.capacity.trim();
     if (step === 2) return !!config.profile;
+    if (step === 3) return true;
     return false;
   };
 
   const handleNext = () => {
-    if (step < 2) setStep(step + 1);
+    if (step < 3) setStep(step + 1);
     else navigate("/dashboard", { state: { config } });
   };
 
@@ -83,12 +84,12 @@ export default function Onboarding() {
       <div className={style.headerFlexBetween}>
         <button onClick={() => navigate("/")} className={style.flexCenter}>
           <div className={style.iconBoxTiny}>
-            <FaSun size={12} className={style.textPrimary} />
+            <Sun size={12} className={style.textPrimary} />
           </div>
           <span className={style.logoText}>Solaris Potiguar</span>
         </button>
         <div className={style.headerMono}>
-          Configuração inicial · {step + 1} de 3
+          Configuração inicial · {step + 1} de 4
         </div>
       </div>
 
@@ -124,7 +125,7 @@ export default function Onboarding() {
               <div>
                 <label className={style.label}>Cidade / Região no RN</label>
                 <div className="relative">
-                  <FaLocationDot size={15} className={style.inputIconPos} />
+                  <MapPin size={15} className={style.inputIconPos} />
                   <input
                     type="text"
                     placeholder="Ex: Mossoró, Caicó, Serra do Mel…"
@@ -135,7 +136,7 @@ export default function Onboarding() {
                 </div>
               </div>
               <div className={style.alertCard}>
-                <FaCircleExclamation size={14} className={style.textMutedFlex} />
+                <CircleAlert size={14} className={style.textMutedFlex} />
                 <p className={style.textXsLeading}>
                   A localização é usada para buscar dados climáticos da Open-Meteo API automaticamente.
                 </p>
@@ -202,7 +203,7 @@ export default function Onboarding() {
                       }`}
                     >
                       <div className="flex items-start gap-4">
-                        <div className={`mt-0.5 ${p.color}`}>{p.icon({ size: 22 })}</div>
+                        <div className={`mt-0.5 ${p.color}`}><p.icon size={22} /></div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center justify-between gap-2">
                             <div className={`font-semibold text-sm ${selected ? "text-primary" : "text-foreground"}`}>
@@ -254,13 +255,99 @@ export default function Onboarding() {
             </div>
           )}
 
+          {step === 3 && (
+            <div className="space-y-5">
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                Descreva brevemente como funciona sua rotina de consumo de energia.
+                Quanto mais detalhes, melhor o agente poderá analisar e sugerir otimizações.
+              </p>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-4">
+                  <div>
+                    <label className={style.label}>
+                      Quais equipamentos consomem mais energia?
+                    </label>
+                    <div className="flex flex-wrap gap-2">
+                      {[
+                        "Bombas de irrigação",
+                        "Câmara fria",
+                        "Ordenhadeira",
+                        "Motores elétricos",
+                        "Ventilação",
+                        "Iluminação",
+                        "Compressor",
+                        "Silo / secador",
+                      ].map((eq) => (
+                        <button
+                          key={eq}
+                          type="button"
+                          onClick={() =>
+                            setConfig({
+                              ...config,
+                              routine: config.routine
+                                ? `${config.routine}\n${eq}`
+                                : eq,
+                            })
+                          }
+                          className="px-3 py-1.5 rounded-lg border border-border bg-secondary text-xs text-muted-foreground hover:border-primary/40 hover:text-foreground hover:bg-primary/5 transition-all active:scale-95"
+                        >
+                          + {eq}
+                        </button>
+                      ))}
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-2">
+                      Clique para adicionar à descrição abaixo.
+                    </p>
+                  </div>
+
+                  <div>
+                    <label className={style.label}>
+                      Descrição da rotina
+                      <span className="ml-2 text-xs font-normal text-muted-foreground">— opcional</span>
+                    </label>
+                    <textarea
+                      placeholder="Ex: As bombas funcionam das 14h às 17h, a câmara fria fica ligada 24h..."
+                      value={config.routine}
+                      onChange={(e) => setConfig({ ...config, routine: e.target.value })}
+                      className={style.textarea}
+                      rows={6}
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-3">
+                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Exemplos</p>
+                  <div className={style.alertCard}>
+                    <FileText size={14} className="text-green-500 shrink-0 mt-0.5" />
+                    <div>
+                      <p className="text-xs font-medium text-green-600">Boa descrição</p>
+                      <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">
+                        "Temos uma fazenda irrigada. As bombas de irrigação funcionam normalmente das 14h às 17h. Também usamos uma câmara fria durante todo o dia. Se houver vantagem econômica, conseguimos antecipar a irrigação para o período da manhã."
+                      </p>
+                    </div>
+                  </div>
+                  <div className={style.alertCard}>
+                    <CircleAlert size={14} className="text-yellow-500 shrink-0 mt-0.5" />
+                    <div>
+                      <p className="text-xs font-medium text-yellow-600">Descrição fraca</p>
+                      <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">
+                        "Tenho placas solares e gasto bastante energia."
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
           <div className="flex items-center justify-between mt-10">
             <button
               onClick={() => setStep(Math.max(0, step - 1))}
               disabled={step === 0}
               className={style.btnBackStep}
             >
-              <FaChevronLeft size={16} />
+              <ChevronLeft size={16} />
               Voltar
             </button>
 
@@ -273,15 +360,15 @@ export default function Onboarding() {
                   : "bg-secondary text-muted-foreground cursor-not-allowed"
               }`}
             >
-              {step === 2 ? (
+              {step === 3 ? (
                 <>
-                  <FaCheck size={15} />
+                  <Check size={15} />
                   Concluir configuração
                 </>
               ) : (
                 <>
                   Continuar
-                  <FaChevronRight size={16} />
+                  <ChevronRight size={16} />
                 </>
               )}
             </button>

@@ -154,7 +154,7 @@ export const style = {
 
   pageFlex: "min-h-screen bg-background text-foreground flex flex-col",
   flexCenterFull: "flex-1 flex items-center justify-center px-6 py-12",
-  containerLg: "w-full max-w-lg",
+  containerLg: "w-full max-w-2xl",
 
   headerFlexBetween: "border-b border-border px-6 py-4 flex items-center justify-between",
   headerSticky: "border-b border-border px-6 py-4 sticky top-0 bg-background/95 backdrop-blur z-10",
@@ -181,6 +181,7 @@ export const style = {
   inputSuffix: "w-full px-4 py-3 rounded-lg bg-secondary border border-border text-foreground placeholder-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary/50 focus:border-primary/50 transition-all pr-16",
   inputIconPos: "absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground",
   inputSuffixText: "absolute right-4 top-1/2 -translate-y-1/2 text-xs font-mono text-muted-foreground",
+  textarea: "w-full px-4 py-3 rounded-lg bg-secondary border border-border text-foreground placeholder-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary/50 focus:border-primary/50 transition-all resize-y",
 
   alertCard: "pt-2 p-4 rounded-lg bg-secondary/50 border border-border flex gap-2.5",
 

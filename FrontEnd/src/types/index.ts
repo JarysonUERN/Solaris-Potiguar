@@ -12,6 +12,7 @@ export interface PropertyConfig {
   storage: string;
   consumption: string;
   profile: Profile;
+  routine: string;
 }
 
 export interface LoadCurve {
