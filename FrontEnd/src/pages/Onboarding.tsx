@@ -5,9 +5,9 @@ import {
   Check, Droplet, Store, House, Factory, Bird, FileText,
 } from "lucide-react";
 
-import type { PropertyConfig, Profile, LoadCurve } from "../types/index.js";
+import type { PropertyConfig, Profile, LoadCurve, CitySuggestion } from "../types/index.js";
 import { style } from "../styles/styles.js";
-import { submitOnboarding } from "../services/api.js";
+import { submitOnboarding, searchCity } from "../services/api.js";
 
 
 const profiles = [
@@ -56,6 +56,7 @@ export default function Onboarding() {
       navigate("/login", { replace: true });
     }
   }, [navigate]);
+
   const [config, setConfig] = useState<PropertyConfig>({
     name: "",
     city: "",
@@ -65,6 +66,39 @@ export default function Onboarding() {
     profile: "residencial",
     routine: "",
   });
+  const [selectedCity, setSelectedCity] = useState<CitySuggestion | null>(null);
+  const [suggestions, setSuggestions] = useState<CitySuggestion[]>([]);
+  const [isSearchingCity, setIsSearchingCity] = useState(false);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+
+  const cityQuery = config.city.trim();
+
+  useEffect(() => {
+    if (!cityQuery) {
+      setSuggestions([]);
+      setShowSuggestions(false);
+      return;
+    }
+    if (selectedCity && cityQuery === selectedCity.name) {
+      setShowSuggestions(false);
+      return;
+    }
+
+    setIsSearchingCity(true);
+    setShowSuggestions(true);
+
+    const timer = setTimeout(async () => {
+      try {
+        const results = await searchCity(cityQuery);
+        setSuggestions(results);
+      } catch {
+        setSuggestions([]);
+      }
+      setIsSearchingCity(false);
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [cityQuery, selectedCity]);
 
   const steps = [
     { title: "Sua propriedade", subtitle: "Como você chama e onde fica?" },
@@ -74,11 +108,25 @@ export default function Onboarding() {
   ];
 
   const canAdvance = () => {
-    if (step === 0) return config.name.trim() && config.city.trim();
+    if (step === 0) return config.name.trim() && selectedCity !== null;
     if (step === 1) return config.capacity.trim();
     if (step === 2) return !!config.profile;
     if (step === 3) return true;
     return false;
+  };
+
+  const handleCityChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setConfig({ ...config, city: e.target.value });
+    if (selectedCity && e.target.value !== selectedCity.name) {
+      setSelectedCity(null);
+    }
+  };
+
+  const handleSelectCity = (suggestion: CitySuggestion) => {
+    setConfig({ ...config, city: suggestion.name, latitude: suggestion.latitude, longitude: suggestion.longitude });
+    setSelectedCity(suggestion);
+    setSuggestions([]);
+    setShowSuggestions(false);
   };
 
   const handleNext = async () => {
@@ -91,6 +139,8 @@ export default function Onboarding() {
       const res = await submitOnboarding({
         farm_name: config.name,
         city: config.city,
+        ...(config.latitude !== undefined && { latitude: config.latitude }),
+        ...(config.longitude !== undefined && { longitude: config.longitude }),
         installed_power_kwp: parseFloat(config.capacity) || 0,
         has_battery: parseFloat(config.storage) > 0,
         battery_capacity_kwh: parseFloat(config.storage) || 0,
@@ -164,10 +214,46 @@ export default function Onboarding() {
                     type="text"
                     placeholder="Ex: Mossoró, Caicó, Serra do Mel…"
                     value={config.city}
-                    onChange={(e) => setConfig({ ...config, city: e.target.value })}
+                    onChange={handleCityChange}
+                    onFocus={() => { if (suggestions.length > 0 || isSearchingCity) setShowSuggestions(true); }}
+                    onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
                     className={style.inputIcon}
+                    autoComplete="off"
                   />
+
+                  {showSuggestions && (
+                    <ul className="absolute z-50 left-0 right-0 top-full mt-1 bg-card border border-border rounded-xl shadow-xl overflow-hidden max-h-56 overflow-y-auto">
+                      {isSearchingCity && (
+                        <li className="px-4 py-3 text-xs text-muted-foreground">Buscando...</li>
+                      )}
+                      {!isSearchingCity && suggestions.length === 0 && cityQuery && (
+                        <li className="px-4 py-3 text-xs text-muted-foreground">Nenhuma cidade encontrada</li>
+                      )}
+                      {!isSearchingCity &&
+                        suggestions.map((s, i) => (
+                          <li
+                            key={`${s.latitude}-${s.longitude}-${i}`}
+                            onMouseDown={() => handleSelectCity(s)}
+                            className="px-4 py-3 text-sm cursor-pointer hover:bg-primary/10 transition-colors border-b border-border last:border-b-0"
+                          >
+                            <span className="text-foreground font-medium">{s.name}</span>
+                            {s.admin1 && (
+                              <span className="text-muted-foreground ml-1.5 text-xs">
+                                {s.admin1}, {s.country}
+                              </span>
+                            )}
+                          </li>
+                        ))}
+                    </ul>
+                  )}
                 </div>
+                {selectedCity && (
+                  <p className="text-xs text-green-600 mt-1.5 flex items-center gap-1">
+                    <Check size={12} />
+                    Localização confirmada: {selectedCity.name}
+                    {selectedCity.admin1 && `, ${selectedCity.admin1}`}
+                  </p>
+                )}
               </div>
               <div className={style.alertCard}>
                 <CircleAlert size={14} className={style.textMutedFlex} />

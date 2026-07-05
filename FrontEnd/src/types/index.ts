@@ -5,9 +5,19 @@ export type Profile =
   | "residencial"
   | "agroindustria";
 
+export interface CitySuggestion {
+  name: string;
+  latitude: number;
+  longitude: number;
+  country: string;
+  admin1?: string;
+}
+
 export interface PropertyConfig {
   name: string;
   city: string;
+  latitude?: number;
+  longitude?: number;
   capacity: string;
   storage: string;
   consumption: string;

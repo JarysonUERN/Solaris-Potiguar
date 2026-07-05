@@ -8,7 +8,7 @@ import { style } from "../styles/styles.js";
 import ThemeToggle from "../components/ThemeToggle.js";
 import HeroCarousel from "../components/HeroCarousel.js";
 import LandscapeCarousel from "../components/LandscapeCarousel.js";
-
+import LangSelector from "../components/LangSelector.tsx";
 export default function Landing() {
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
@@ -65,7 +65,6 @@ export default function Landing() {
             />
             <span className={style.navLogoText}> Solaris Potiguar</span>
           </div>
-
           <div className={style.navLinks}>
             <a href="#como-funciona" className={style.linkHover}>Como funciona</a>
             <a href="#agentes" className={style.linkHover}>Agentes</a>
@@ -73,6 +72,7 @@ export default function Landing() {
           </div>
 
           <div className={style.navActions}>
+            <LangSelector />
             {isLoggedIn ? (
               <>
                 <button
@@ -119,6 +119,9 @@ export default function Landing() {
             <a href="#como-funciona" className={style.textSm} onClick={() => setMenuOpen(false)}>Como funciona</a>
             <a href="#agentes" className={style.textSm} onClick={() => setMenuOpen(false)}>Agentes</a>
             <a href="#beneficios" className={style.textSm} onClick={() => setMenuOpen(false)}>Benefícios</a>
+            <div className="flex justify-center">
+              <LangSelector />
+            </div>
             {isLoggedIn ? (
               <>
                 <button onClick={() => navigate("/dashboard")} className={style.btnPrimaryFull}>
