@@ -1,6 +1,6 @@
 <img src= "FrontEnd\src\assets\images\SolarisP.png" />
 
-<div style= "margintop: 20px;">
+<div style= "margin: 20px;">
 
 > **AI-powered decision support for small solar energy producers in Northeast Brazil.**
 </div>
