@@ -13,7 +13,7 @@ export default function LangSelector() {
             : "text-muted-foreground hover:text-foreground"
         }`}
       >
-        PT
+        🇧🇷 PT
       </button>
       <button
         onClick={() => setLanguage("en")}
@@ -23,7 +23,7 @@ export default function LangSelector() {
             : "text-muted-foreground hover:text-foreground"
         }`}
       >
-        EN
+        🇺🇸​ EN
       </button>
     </div>
   );
