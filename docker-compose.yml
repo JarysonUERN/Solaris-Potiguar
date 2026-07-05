@@ -29,6 +29,7 @@ services:
       RAILS_MASTER_KEY: ${RAILS_MASTER_KEY}
       FIREWORKS_API_KEY: ${FIREWORKS_API_KEY}
       PORT: "3000"
+      BINDING: "0.0.0.0"
       RAILS_LOG_LEVEL: info
     volumes:
       - ./BackEnd:/rails

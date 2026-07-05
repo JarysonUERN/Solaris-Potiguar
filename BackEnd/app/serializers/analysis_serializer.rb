@@ -4,6 +4,8 @@ class AnalysisSerializer
   end
 
   def serialize
+    raw = @analysis.raw_data || {}
+
     {
       id: @analysis.id,
       property_id: @analysis.property_id,
@@ -26,6 +28,9 @@ class AnalysisSerializer
       insights: {
         executive_summary: @analysis.executive_summary,
         recommendations: @analysis.recommendations
+      },
+      raw_data: {
+        insights: raw.dig("insights") || raw.dig(:insights) || {}
       },
       savings: {
         kwh: @analysis.estimated_savings_kwh&.to_f,

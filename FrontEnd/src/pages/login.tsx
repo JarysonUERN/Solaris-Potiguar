@@ -3,15 +3,14 @@ import { useNavigate } from "react-router-dom";
 import { ArrowRight, Lock, Mail, Eye, EyeOff, Sun, Moon } from "lucide-react";
 import { style } from "../styles/styles.js";
 import { useTheme } from "../hooks/useTheme.js";
+import { useLanguage } from "../i18n/index.js";
+import LangSelector from "../components/LangSelector.js";
+import { login as apiLogin } from "../services/api.js";
 import homeIcon from "../assets/icons/home-1-svgrepo-com.svg";
-
-const mockCredentials = {
-  email: "demo@solaris.com",
-  password: "123456",
-};
 
 export default function Login() {
   const navigate = useNavigate();
+  const { t } = useLanguage();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -26,32 +25,37 @@ export default function Login() {
     }
   }, [navigate]);
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setError("");
 
     if (!email.trim() || !password.trim()) {
-      setError("Informe seu e-mail e senha para continuar.");
-      return;
-    }
-
-    if (email.trim().toLowerCase() !== mockCredentials.email || password !== mockCredentials.password) {
-      setError("Credenciais inválidas. Use demo@solaris.com / 123456.");
+      setError(t("login.error.required"));
       return;
     }
 
     setIsSubmitting(true);
 
-    const session = {
-      email: email.trim().toLowerCase(),
-      loggedAt: new Date().toISOString(),
-    };
+    try {
+      const data = await apiLogin(email.trim().toLowerCase(), password);
 
-    localStorage.setItem("solaris-auth", JSON.stringify(session));
+      localStorage.setItem(
+        "solaris-auth",
+        JSON.stringify({
+          token: data.token,
+          email: data.email,
+          full_name: data.full_name,
+        })
+      );
 
-    window.setTimeout(() => {
       navigate("/dashboard");
-    }, 400);
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : t("login.error.generic")
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -63,12 +67,15 @@ export default function Login() {
         >
           <img src={homeIcon} alt="Home" className="w-5 h-5" />
         </button>
-        <button onClick={toggle} className={style.flexCenter}>
-          <div className={style.iconBoxTiny}>
-            {isLight ? <Moon size={12} className={style.textPrimary} /> : <Sun size={12} className={style.textPrimary} />}
-          </div>
-          <span className={style.logoText}>Solaris Potiguar</span>
-        </button>
+        <div className="flex items-center gap-3">
+          <button onClick={toggle} className={style.flexCenter}>
+            <div className={style.iconBoxTiny}>
+              {isLight ? <Moon size={12} className={style.textPrimary} /> : <Sun size={12} className={style.textPrimary} />}
+            </div>
+            <span className={style.logoText}>Solaris Potiguar</span>
+          </button>
+          <LangSelector />
+        </div>
       </header>
 
       <div className={style.flexCenterFull}>
@@ -77,38 +84,38 @@ export default function Login() {
             <div className="mb-6 text-center">
               <div className={style.badge}>
                 <Sun size={12} />
-                Acesso seguro · Mock local
+                {t("login.badge")}
               </div>
-              <h1 className={style.title2xl}>Entrar na sua conta</h1>
+              <h1 className={style.title2xl}>{t("login.title")}</h1>
               <p className={style.textSmMutedTop}>
-                Acesse o painel com um fluxo de autenticação simulado para o MVP.
+                {t("login.subtitle")}
               </p>
             </div>
 
             <form className={style.spaceY4} onSubmit={handleSubmit}>
               <div>
-                <label className={style.label}>E-mail</label>
+                <label className={style.label}>{t("login.label.email")}</label>
                 <div className="relative">
                   <Mail size={15} className={style.inputIconPos} />
                   <input
                     type="email"
                     value={email}
                     onChange={(event) => setEmail(event.target.value)}
-                    placeholder="seu@email.com"
+                    placeholder={t("login.placeholder.email")}
                     className={style.inputIcon}
                   />
                 </div>
               </div>
 
               <div>
-                <label className={style.label}>Senha</label>
+                <label className={style.label}>{t("login.label.password")}</label>
                 <div className="relative">
                   <Lock size={15} className={style.inputIconPos} />
                   <input
                     type={showPassword ? "text" : "password"}
                     value={password}
                     onChange={(event) => setPassword(event.target.value)}
-                    placeholder="Digite sua senha"
+                    placeholder={t("login.placeholder.password")}
                     className={style.inputIcon}
                   />
                   <button
@@ -132,22 +139,18 @@ export default function Login() {
                 disabled={isSubmitting}
                 className={`${style.btnNext} w-full justify-center ${isSubmitting ? "bg-secondary text-muted-foreground cursor-not-allowed" : "bg-primary text-primary-foreground hover:bg-primary/90"}`}
               >
-                {isSubmitting ? "Entrando..." : "Entrar"}
+                {isSubmitting ? t("login.button.submitting") : t("login.button")}
                 <ArrowRight size={16} />
               </button>
             </form>
 
-            <div className="mt-6 rounded-lg border border-border bg-secondary/40 p-3 text-center text-sm text-muted-foreground">
-              Credenciais de demo: <span className="font-medium text-foreground">demo@solaris.com</span> / <span className="font-medium text-foreground">123456</span>
-            </div>
-
             <p className="mt-6 text-center text-xs text-muted-foreground">
-              Ainda não tem conta?{" "}
+              {t("login.footer.text")}{" "}
               <button
                 onClick={() => navigate("/register")}
                 className="font-medium text-primary hover:text-primary/80 underline underline-offset-2 transition-colors"
               >
-                Criar cadastro
+                {t("login.footer.link")}
               </button>
             </p>
           </div>
@@ -156,5 +159,3 @@ export default function Login() {
     </div>
   );
 }
-
-
