@@ -1,7 +1,9 @@
-#  Solaris Potiguar
+<img src= "FrontEnd\src\assets\images\SolarisP.png" />
+
+<div style= "margintop: 20px;">
 
 > **AI-powered decision support for small solar energy producers in Northeast Brazil.**
-
+</div>
 Solaris Potiguar is an AI-powered decision support platform that helps small rural producers, cooperatives, and agribusinesses maximize the value of their photovoltaic systems. By combining weather forecasts, operational context, and multi-agent reasoning accelerated by AMD infrastructure, Solaris transforms complex energy data into simple, actionable recommendations.
 
 Developed for the **AMD Hackathon 2026 – Unicorn Track**.
@@ -57,48 +59,68 @@ The goal is not to replace existing Energy Management Systems, but to make intel
 
 ## Frontend
 
-- React
-- TypeScript
-- Vite
-- Tailwind CSS
-- React Router
-- i18n (Portuguese / English)
-- Custom Hooks
+| Technology | Detail |
+|------------|--------|
+| React | 19 |
+| TypeScript | 6 |
+| Vite | 8 |
+| Tailwind CSS | 4 |
+| React Router DOM | 7 |
+| Lucide React | Icons |
+| Oxlint | Linter |
+| i18n | Portuguese / English |
+| Custom Hooks | useTheme |
+
+**Pages (6 routes):** Landing, Login, Register, Onboarding, Dashboard, Result
 
 ---
 
 ## Backend
 
-- Ruby on Rails (API Only)
-- PostgreSQL
-- RESTful API
-- JWT Authentication
+| Technology | Detail |
+|------------|--------|
+| Framework | Ruby on Rails 7.2 (API Only) |
+| Language | Ruby 4.0 |
+| Database | PostgreSQL 16 |
+| Authentication | JWT + bcrypt |
+| HTTP Client | HTTParty (Open-Meteo, Fireworks AI) |
+| Web Server | Puma (port 3000) |
 
-Planned endpoints:
+**AI Agents (4 specialized models):**
 
-```
-POST /api/v1/login
-POST /api/v1/register
+| Agent | Service | Role |
+|-------|---------|------|
+| 🌤️ Climate | `ClimateService` | Retrieves solar irradiation, cloud cover, temperature |
+| ⚡ Generation | `GenerationAgentService` | Analyzes solar generation potential |
+| 🔋 Storage | `StorageAgentService` | Evaluates battery usage opportunities |
+| 🧠 Orchestrator | `OrchestratorAgentService` | Synthesizes all insights into recommendations |
 
-GET  /api/v1/user
-PATCH /api/v1/user
+**API Endpoints:**
 
-POST /api/v1/onboarding
-
-GET  /api/v1/dashboard
-POST /api/v1/analysis
-GET  /api/v1/analysis/history
-```
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/solaris_potiguar/login` | User authentication (returns JWT) |
+| POST | `/solaris_potiguar/register` | Create new user |
+| GET | `/solaris_potiguar/user` | Get current user profile |
+| PUT | `/solaris_potiguar/user` | Update user profile |
+| POST | `/solaris_potiguar/onboarding` | Register property / solar setup |
+| POST | `/api/setup` | Create property |
+| GET | `/api/setup/:id` | Get property details |
+| PUT | `/api/setup/:id` | Update property |
+| GET | `/api/climate/fetch/:property_id` | Fetch weather data (Open-Meteo) |
+| POST | `/api/analysis` | Run multi-agent analysis |
+| GET | `/api/analysis/:id` | Get single analysis result |
+| GET | `/api/analysis/property/:property_id` | List analyses for a property |
 
 ---
 
 ## AI & Cloud
 
-- AMD Developer Cloud
+- AMD Developer Cloud (MI300X GPU instances)
 - AMD Instinct MI300X GPUs
-- Fireworks AI
-- Llama Models
+- Fireworks AI (Llama 3.1 8B Instruct)
 - ROCm
+- Multi-agent inference pipeline
 
 ---
 
@@ -122,29 +144,78 @@ Instead of technical charts, users receive practical guidance that supports bett
 
 ---
 
+#  Frontend Routes
+
+| Route | Page | Description |
+|-------|------|-------------|
+| `/` | Landing | Marketing page with hero carousel, AI architecture explainer |
+| `/login` | Login | Email/password authentication |
+| `/register` | Register | User registration (name, email, phone, CPF) |
+| `/onboarding` | Onboarding | Multi-step property setup (panels, battery, consumption) |
+| `/dashboard` | Dashboard | Weather forecast, recommendations, analysis history |
+| `/result` | Result | Detailed analysis with AI summary and savings estimate |
+
+---
+
+#  Database Models
+
+| Table | Key Fields |
+|-------|------------|
+| **users** | `full_name`, `email`, `password_digest`, `phone`, `cpf` (unique) |
+| **properties** | `farm_name`, `city`, `installed_power_kwp`, `has_battery`, `battery_capacity_kwh`, `average_daily_consumption_kwh`, `operation_type`, `main_equipments` (JSONB), `user_id` (FK) |
+| **analyses** | `property_id` (FK), `solar_irradiation`, `estimated_generation_kwh`, `estimated_consumption_kwh`, `balance_kwh`, `classification`, `battery_charge_kwh`, `executive_summary`, `recommendations`, `estimated_savings_kwh`, `raw_data` (JSONB) |
+
+---
+
+#  Analysis Pipeline
+
+1. **Weather Fetch** — Retrieves forecast data from Open-Meteo API for the property's coordinates
+2. **Energy Calculation** — Estimates solar generation and consumption via `EnergyCalculatorService`
+3. **Classification** — Classifies energy balance (`EXCEDENTE`, `EQUILIBRIO`, `BAIXA_GERACAO`, `RISCO_DEFICIT`, `DEFICIT`)
+4. **Multi-Agent Analysis** — 4 specialized AI agents collaborate via Fireworks AI (Llama 3.1 8B)
+5. **Serialization** — Results saved to PostgreSQL, returned as structured JSON
+
+---
+
 #  Project Structure
 
 ```
 Solaris-Potiguar/
 
-├── FrontEnd/
+├── FrontEnd/                          # React + Vite + TypeScript SPA
 │   ├── src/
-│   ├── docs/
-│   └── ...
+│   │   ├── components/                # Shared UI components
+│   │   ├── hooks/                     # Custom React hooks (useTheme)
+│   │   ├── i18n/                      # Internationalization (PT / EN)
+│   │   ├── pages/                     # 6 route pages
+│   │   ├── routes/                    # React Router configuration
+│   │   ├── services/                  # API client
+│   │   ├── styles/                    # Tailwind, fonts, theme
+│   │   └── types/                     # TypeScript type definitions
+│   ├── docs/                          # API documentation
+│   ├── index.html
+│   ├── vite.config.ts
+│   └── Dockerfile
 │
-├── BackEnd/
+├── BackEnd/                           # Ruby on Rails API
 │   ├── app/
-│   ├── config/
-│   └── ...
+│   │   ├── controllers/api/           # REST endpoints
+│   │   ├── controllers/solaris_potiguar/  # Auth & onboarding
+│   │   ├── models/                    # User, Property, Analysis
+│   │   ├── serializers/               # JSON serialization
+│   │   └── services/agents/           # 4 AI agents
+│   ├── config/                        # Rails configuration
+│   ├── db/migrate/                    # Database migrations
+│   └── Dockerfile
 │
-├── docs/
-│   ├── Architecture.md
-│   ├── BusinessRules.md
-│   ├── API.md
-│   ├── Pitch.md
-│   └── Diagrams/
+├── .docs/                             # Project documentation
+│   ├── Images/                        # Architecture & flow diagrams
+│   ├── RegrasdNegocio.md              # Business rules (PT)
+│   ├── useCase.md                     # Use case specifications
+│   └── archteture.md                  # ASCII architecture diagram
 │
 ├── docker-compose.yml
+├── .env.example
 ├── README.md
 └── LICENSE
 ```
@@ -167,13 +238,13 @@ Solaris-Potiguar/
 
 ## Backend MVP
 
-- [ ] Database Modeling
-- [ ] Domain Models
-- [ ] REST API
-- [ ] JWT Authentication
-- [ ] Open-Meteo Integration
-- [ ] Fireworks AI Integration
-- [ ] Frontend Integration
+- [x] Database Modeling (3 tables: users, properties, analyses)
+- [x] Domain Models (User, Property, Analysis)
+- [x] REST API (12 endpoints, 6 controllers)
+- [x] JWT Authentication (bcrypt + JWT tokens)
+- [x] Open-Meteo Integration (weather forecast + geocoding)
+- [x] Fireworks AI Integration (Llama 3.1 8B multi-agent)
+- [x] Frontend Integration (all pages connected)
 
 ---
 
@@ -238,7 +309,7 @@ The AMD ecosystem makes enterprise-grade AI accessible to applications that serv
 ## Prerequisites
 
 - [Docker](https://docs.docker.com/get-docker/) and [Docker Compose](https://docs.docker.com/compose/install/) installed
-- `BackEnd/config/master.key` file present (Rails master key)
+- `config/master.key` file present inside the `BackEnd/` directory (Rails master key)
 
 ## Environment Variables
 
