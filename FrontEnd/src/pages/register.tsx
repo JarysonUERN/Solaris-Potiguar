@@ -1,12 +1,14 @@
 import { useState, type FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import { User, Mail, Phone, CreditCard, Lock, Check, ArrowRight, Sun } from "lucide-react";
-import ThemeToggle from "../components/ThemeToggle.js";
 import { style } from "../styles/styles.js";
-import { register, login } from "../services/api.js";
+import { useLanguage } from "../i18n/index.js";
+import LangSelector from "../components/LangSelector.js";
+import { register as apiRegister, login } from "../services/api.js";
 
 export default function Register() {
   const navigate = useNavigate();
+  const { t } = useLanguage();
   const [name, setName] = useState("");
   const [cpf, setCpf] = useState("");
   const [phone, setPhone] = useState("");
@@ -36,34 +38,34 @@ export default function Register() {
     setError("");
 
     if (!name.trim() || !cpf.trim() || !phone.trim() || !email.trim() || !password.trim()) {
-      setError("Preencha todos os campos para continuar.");
+      setError(t("register.error.required"));
       return;
     }
 
     if (password.length < 6) {
-      setError("A senha deve ter pelo menos 6 caracteres.");
+      setError(t("register.error.password_length"));
       return;
     }
 
     if (cpf.replace(/\D/g, "").length !== 11) {
-      setError("Informe um CPF válido com 11 dígitos.");
+      setError(t("register.error.cpf"));
       return;
     }
 
     if (phone.replace(/\D/g, "").length < 10) {
-      setError("Informe um telefone válido com DDD.");
+      setError(t("register.error.phone"));
       return;
     }
 
     if (!email.includes("@") || !email.includes(".")) {
-      setError("Informe um e-mail válido.");
+      setError(t("register.error.email"));
       return;
     }
 
     setIsSubmitting(true);
 
     try {
-      await register({
+      await apiRegister({
         full_name: name.trim(),
         cpf: cpf.replace(/\D/g, ""),
         phone: phone.replace(/\D/g, ""),
@@ -86,7 +88,7 @@ export default function Register() {
       navigate("/onboarding");
     } catch (err) {
       setError(
-        err instanceof Error ? err.message : "Erro ao criar conta. Tente novamente."
+        err instanceof Error ? err.message : t("register.error.generic")
       );
     } finally {
       setIsSubmitting(false);
@@ -102,7 +104,12 @@ export default function Register() {
           </div>
           <span className={style.logoText}>Solaris Potiguar</span>
         </button>
-        <ThemeToggle size={13} />
+        <div className="flex items-center gap-2">
+          <LangSelector />
+          <div style={{ width: 34, height: 34, display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <div style={{ display: "none" }} />
+          </div>
+        </div>
       </header>
 
       <div className={style.flexCenterFull}>
@@ -111,31 +118,31 @@ export default function Register() {
             <div className="mb-6 text-center">
               <div className={style.badge}>
                 <Sun size={12} />
-                Criar sua conta
+                {t("register.badge")}
               </div>
-              <h1 className={style.title2xl}>Criar sua conta</h1>
+              <h1 className={style.title2xl}>{t("register.title")}</h1>
               <p className={style.textSmMutedTop}>
-                Preencha seus dados para começar a usar o Solaris Potiguar.
+                {t("register.subtitle")}
               </p>
             </div>
 
             <form className={style.spaceY4} onSubmit={handleSubmit}>
               <div>
-                <label className={style.label}>Nome completo</label>
+                <label className={style.label}>{t("register.label.name")}</label>
                 <div className="relative">
                   <User size={15} className={style.inputIconPos} />
                   <input
                     type="text"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    placeholder="Ex: Maria Silva"
+                    placeholder={t("register.placeholder.name")}
                     className={style.inputIcon}
                   />
                 </div>
               </div>
 
               <div>
-                <label className={style.label}>CPF</label>
+                <label className={style.label}>{t("register.label.cpf")}</label>
                 <div className="relative">
                   <CreditCard size={15} className={style.inputIconPos} />
                   <input
@@ -150,14 +157,14 @@ export default function Register() {
               </div>
 
               <div>
-                <label className={style.label}>Telefone</label>
+                <label className={style.label}>{t("register.label.phone")}</label>
                 <div className="relative">
                   <Phone size={15} className={style.inputIconPos} />
                   <input
                     type="text"
                     value={phone}
                     onChange={(e) => setPhone(formatPhone(e.target.value))}
-                    placeholder="(84) 00000-0000"
+                    placeholder={t("register.placeholder.phone")}
                     className={style.inputIcon}
                     maxLength={15}
                   />
@@ -175,34 +182,34 @@ export default function Register() {
                     )}
                   </div>
                   <span className="text-xs text-muted-foreground transition-colors">
-                    Este número possui WhatsApp?
+                    {t("register.label.whatsapp")}
                   </span>
                 </label>
               </div>
 
               <div>
-                <label className={style.label}>E-mail</label>
+                <label className={style.label}>{t("register.label.email")}</label>
                 <div className="relative">
                   <Mail size={15} className={style.inputIconPos} />
                   <input
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    placeholder="seu@email.com"
+                    placeholder={t("register.placeholder.email")}
                     className={style.inputIcon}
                   />
                 </div>
               </div>
 
               <div>
-                <label className={style.label}>Senha</label>
+                <label className={style.label}>{t("register.label.password")}</label>
                 <div className="relative">
                   <Lock size={15} className={style.inputIconPos} />
                   <input
                     type="password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    placeholder="Mínimo de 6 caracteres"
+                    placeholder={t("register.placeholder.password")}
                     className={style.inputIcon}
                   />
                 </div>
@@ -219,18 +226,18 @@ export default function Register() {
                 disabled={isSubmitting}
                 className={`${style.btnNext} w-full justify-center ${isSubmitting ? "bg-secondary text-muted-foreground cursor-not-allowed" : "bg-primary text-primary-foreground hover:bg-primary/90"}`}
               >
-                {isSubmitting ? "Criando conta..." : "Criar conta e configurar"}
+                {isSubmitting ? t("register.button.submitting") : t("register.button")}
                 <ArrowRight size={16} />
               </button>
             </form>
 
             <p className="mt-6 text-center text-xs text-muted-foreground">
-              Já tem conta?{" "}
+              {t("register.footer.text")}{" "}
               <button
                 onClick={() => navigate("/login")}
                 className="font-medium text-primary hover:text-primary/80 underline underline-offset-2 transition-colors"
               >
-                Fazer login
+                {t("register.footer.link")}
               </button>
             </p>
           </div>

@@ -5,8 +5,10 @@ import {
   RefreshCw, Sparkles, ChevronRight, Zap, Battery
 } from "lucide-react";
 import ThemeToggle from "../components/ThemeToggle.js";
+import LangSelector from "../components/LangSelector.js";
 import type { PropertyConfig, AnalysisResponse, User, Property } from "../types/index.js";
 import { style } from "../styles/styles.js";
+import { useLanguage } from "../i18n/index.js";
 import homeIcon from "../assets/icons/home-1-svgrepo-com.svg";
 import { fetchUser, fetchProperty, fetchClimate, createAnalysis, fetchAnalysesByProperty, updateUser } from "../services/api.js";
 
@@ -70,6 +72,7 @@ function buildWeatherDisplay(analysis: AnalysisResponse): ClimateDisplay {
 
 export default function Dashboard() {
   const navigate = useNavigate();
+  const { t } = useLanguage();
 
   const [analyses, setAnalyses] = useState<AnalysisResponse[]>([]);
   const [analyzing, setAnalyzing] = useState(false);
@@ -128,7 +131,7 @@ export default function Dashboard() {
         routine: property.operation_description || "",
       }
     : {
-        name: "Carregando...",
+        name: t("dashboard.loading"),
         city: "",
         capacity: "0",
         storage: "0",
@@ -146,7 +149,7 @@ export default function Dashboard() {
       const analysis = await createAnalysis(propId);
       setAnalyses([analysis, ...analyses]);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Erro ao gerar análise.");
+      setError(err instanceof Error ? err.message : t("dashboard.analyze.error"));
     } finally {
       setAnalyzing(false);
     }
@@ -159,7 +162,7 @@ export default function Dashboard() {
       setUser({ ...user, full_name: editingName });
       setShowEditForm(false);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Erro ao atualizar.");
+      setError(err instanceof Error ? err.message : t("dashboard.update.error"));
     }
   };
 
@@ -179,7 +182,7 @@ export default function Dashboard() {
     return (
       <div className={style.page}>
         <div className="flex items-center justify-center min-h-screen text-muted-foreground">
-          Carregando...
+          {t("dashboard.loading")}
         </div>
       </div>
     );
@@ -194,11 +197,12 @@ export default function Dashboard() {
               type="button"
               onClick={() => navigate("/")}
               className="mr-1 flex h-8 w-8 items-center justify-center rounded-lg border border-border bg-card/80 transition-colors hover:border-primary/30 hover:bg-primary/10"
-              aria-label="Voltar para a landing page"
+              aria-label={t("dashboard.header.back")}
             >
-              <img src={homeIcon} alt="Ícone home" className="h-4 w-4" />
+              <img src={homeIcon} alt={t("dashboard.header.back")} className="h-4 w-4" />
             </button>
             <ThemeToggle size={13} />
+            <LangSelector />
             <div>
               <div className={style.subtitleHeader}>{config.name}</div>
               <div className={style.textLocation}>
@@ -232,13 +236,13 @@ export default function Dashboard() {
               showEditForm ? "text-muted-foreground" : "text-primary hover:text-primary/80"
             }`}
           >
-            {showEditForm ? "Cancelar" : "Alterar informações"}
+            {showEditForm ? t("dashboard.sidebar.cancel") : t("dashboard.sidebar.edit")}
           </button>
 
           {showEditForm && (
             <div className="space-y-3">
               <div>
-                <label className={style.label}>Nome</label>
+                <label className={style.label}>{t("dashboard.sidebar.label.name")}</label>
                 <input
                   type="text"
                   value={editingName}
@@ -247,13 +251,13 @@ export default function Dashboard() {
                 />
               </div>
               <div>
-                <label className={style.label}>Nova senha</label>
+                <label className={style.label}>{t("dashboard.sidebar.label.password")}</label>
                 <input
                   type="password"
                   value={editingPassword}
                   onChange={(e) => setEditingPassword(e.target.value)}
                   className={style.input}
-                  placeholder="Deixe vazio para manter"
+                  placeholder={t("dashboard.sidebar.placeholder.password")}
                 />
               </div>
               {error ? (
@@ -265,7 +269,7 @@ export default function Dashboard() {
                 onClick={handleSaveUser}
                 className={`${style.btnPrimarySm} w-full justify-center`}
               >
-                Salvar alterações
+                {t("dashboard.sidebar.save")}
               </button>
             </div>
           )}
@@ -276,7 +280,7 @@ export default function Dashboard() {
             onClick={() => navigate("/onboarding")}
             className="text-sm text-muted-foreground hover:text-foreground border border-border rounded-lg px-4 py-2 transition-colors w-full text-center"
           >
-            Refazer onboarding
+            {t("dashboard.sidebar.redo")}
           </button>
         </aside>
 
@@ -286,7 +290,7 @@ export default function Dashboard() {
               <div className={`${style.flexBetween} mb-4`}>
                 <div className={style.textSectionLabel}>
                   <CloudSun size={12} className={style.textPrimary} />
-                  CLIMA AGORA · {config.city.toUpperCase()}
+                  {t("dashboard.climate.now")} · {config.city.toUpperCase()}
                 </div>
                 <div className={style.forecastTime}>Open-Meteo API</div>
               </div>
@@ -298,11 +302,11 @@ export default function Dashboard() {
                   <div className={style.textSmMuted}>{activeClimate.condition}</div>
                 </div>
                 <div className={style.gridStats}>
-                  <div className={style.textXs}>UV</div>
+                  <div className={style.textXs}>{t("dashboard.climate.uv")}</div>
                   <div className={style.textMonoFg}>{activeClimate.uv}</div>
-                  <div className={style.textXs}>Vento</div>
+                  <div className={style.textXs}>{t("dashboard.climate.wind")}</div>
                   <div className={style.textMonoFg}>{activeClimate.wind} km/h</div>
-                  <div className={style.textXs}>Umidade</div>
+                  <div className={style.textXs}>{t("dashboard.climate.humidity")}</div>
                   <div className={style.textMonoFg}>{activeClimate.humidity}%</div>
                 </div>
               </div>
@@ -329,12 +333,12 @@ export default function Dashboard() {
             {analyzing ? (
               <>
                 <RefreshCw size={18} className="animate-spin" />
-                Agentes analisando…
+                {t("dashboard.analyzing")}
               </>
             ) : (
               <>
                 <Sparkles size={18} />
-                Analisar agora
+                {t("dashboard.analyze")}
               </>
             )}
           </button>
@@ -347,14 +351,14 @@ export default function Dashboard() {
               <div className={`${style.flexBetween} mb-3`}>
                 <div className={style.resultHeader}>
                   <Brain size={12} />
-                  RECOMENDAÇÃO · {new Date(latestAnalysis.date).toLocaleString("pt-BR")}
+                  {t("dashboard.recommendation")} · {new Date(latestAnalysis.date).toLocaleString("pt-BR")}
                 </div>
                 <ChevronRight size={16} className={style.chevronIcon} />
               </div>
               <p className="text-foreground leading-relaxed">{latestAnalysis.insights.executive_summary}</p>
               <div className={`mt-3 ${style.analysisCard}`}>
                 <Layers size={11} />
-                Ver raciocínio dos 3 agentes
+                {t("dashboard.reasoning")}
               </div>
             </div>
           )}
@@ -363,7 +367,7 @@ export default function Dashboard() {
             <div>
               <div className={style.analysisHistoryHeader}>
                 <History size={11} />
-                ANÁLISES ANTERIORES
+                {t("dashboard.history")}
               </div>
               <div className={style.spaceY2}>
                 {analyses.slice(1, 4).map((a) => (
@@ -386,17 +390,19 @@ export default function Dashboard() {
           {latestAnalysis && (
             <div className={style.gridCols3}>
               {[
-                { label: "Geração", value: `${latestAnalysis.energy.generation_kwh.toFixed(1)} kWh`, sub: "estimado", icon: <Sun size={13} className={style.textPrimary} />, color: "text-primary" },
-                { label: "Consumo", value: `${latestAnalysis.energy.consumption_kwh.toFixed(1)} kWh`, sub: "estimado", icon: <Zap size={13} className={style.textBlue} />, color: "text-blue-400" },
-                { label: "Bateria", value: latestAnalysis.battery.status === "not_applicable" ? "N/A" : `${latestAnalysis.battery.charge_kwh.toFixed(1)} kWh`, sub: latestAnalysis.battery.status, icon: <Battery size={13} className={style.textAccent} />, color: "text-accent" },
+                { labelKey: "dashboard.stats.generation", value: `${latestAnalysis.energy.generation_kwh.toFixed(1)} kWh`, subKey: "dashboard.stats.estimated", icon: <Sun size={13} className={style.textPrimary} />, color: "text-primary" },
+                { labelKey: "dashboard.stats.consumption", value: `${latestAnalysis.energy.consumption_kwh.toFixed(1)} kWh`, subKey: "dashboard.stats.estimated", icon: <Zap size={13} className={style.textBlue} />, color: "text-blue-400" },
+                { labelKey: "dashboard.stats.battery", value: latestAnalysis.battery.status === "not_applicable" ? "N/A" : `${latestAnalysis.battery.charge_kwh.toFixed(1)} kWh`, subKey: latestAnalysis.battery.status, icon: <Battery size={13} className={style.textAccent} />, color: "text-accent" },
               ].map((stat) => (
-                <div key={stat.label} className={style.cardSmall}>
+                <div key={stat.labelKey} className={style.cardSmall}>
                   <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-2">
                     {stat.icon}
-                    {stat.label}
+                    {t(stat.labelKey)}
                   </div>
                   <div className={`text-xl font-bold font-mono ${stat.color}`}>{stat.value}</div>
-                  <div className="text-[10px] text-muted-foreground mt-0.5 font-mono">{stat.sub}</div>
+                  <div className="text-[10px] text-muted-foreground mt-0.5 font-mono">
+                    {stat.subKey === "dashboard.stats.estimated" ? t(stat.subKey) : stat.subKey}
+                  </div>
                 </div>
               ))}
             </div>
