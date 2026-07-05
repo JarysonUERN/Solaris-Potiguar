@@ -5,6 +5,7 @@ import type {
   AnalysisResponse,
   ClimateFetchResponse,
   OnboardingResponse,
+  CitySuggestion,
 } from "../types/index.js";
 
 function getToken(): string | null {
@@ -38,6 +39,20 @@ async function request<T>(url: string, options: RequestInit = {}): Promise<T> {
   }
 
   return body as T;
+}
+
+export async function searchCity(query: string): Promise<CitySuggestion[]> {
+  const res = await fetch(
+    `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(query)}&count=6&language=pt&format=json`,
+  );
+  const data = await res.json();
+  return (data.results || []).map((r: { name: string; latitude: number; longitude: number; country: string; admin1?: string }) => ({
+    name: r.name,
+    latitude: r.latitude,
+    longitude: r.longitude,
+    country: r.country,
+    admin1: r.admin1,
+  }));
 }
 
 export async function login(
@@ -82,6 +97,8 @@ export async function updateUser(data: {
 export async function submitOnboarding(data: {
   farm_name: string;
   city: string;
+  latitude?: number;
+  longitude?: number;
   installed_power_kwp: number;
   has_battery: boolean;
   battery_capacity_kwh: number;
