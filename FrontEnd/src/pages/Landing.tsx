@@ -10,6 +10,7 @@ import ThemeToggle from "../components/ThemeToggle.js";
 import HeroCarousel from "../components/HeroCarousel.js";
 import LandscapeCarousel from "../components/LandscapeCarousel.js";
 import LangSelector from "../components/LangSelector.js";
+import SolarisP from "../assets/images/SolarisP.png";
 
 export default function Landing() {
   const navigate = useNavigate();
@@ -66,7 +67,11 @@ export default function Landing() {
               bgDark="bg-primary"
               bgLight="bg-blue-900"
             />
-            <span className={style.navLogoText}> Solaris Potiguar</span>
+            <img
+              src={SolarisP}
+              alt="Solaris Potiguar"
+              className="h-8 w-auto object-contain"
+            />
           </div>
           <div className={style.navLinks}>
             <a href="#como-funciona" className={style.linkHover}>{t("nav.links.how")}</a>
