@@ -36,12 +36,19 @@ services:
       - bundle:/usr/local/bundle
     stdin_open: true
     tty: true
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/up"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
 
   frontend:
     build:
       context: ./FrontEnd
     depends_on:
-      - backend
+      backend:
+        condition: service_healthy
     ports:
       - "80:80"
     restart: unless-stopped
