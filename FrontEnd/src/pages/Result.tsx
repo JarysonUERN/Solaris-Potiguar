@@ -6,6 +6,7 @@ import {
 import type { AnalysisResponse } from "../types/index.js";
 import { useLanguage } from "../i18n/index.js";
 import LangSelector from "../components/LangSelector.js";
+import SolarisP from "../assets/images/SolarisP.png";
 
 export default function Result() {
   const navigate = useNavigate();
@@ -33,6 +34,11 @@ export default function Result() {
             <ChevronLeft size={16} />
             {t("result.dashboard")}
           </button>
+          <img
+            src={SolarisP}
+            alt="Solaris Potiguar"
+            className="h-8 w-auto object-contain"
+          />
           <div className={style.divider} />
           <div className={style.textMonoXs}>{new Date(analysis.date).toLocaleString("pt-BR")}</div>
           <div className="ml-auto">

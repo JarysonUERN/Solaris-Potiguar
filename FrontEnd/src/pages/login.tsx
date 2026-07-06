@@ -7,6 +7,7 @@ import { useLanguage } from "../i18n/index.js";
 import LangSelector from "../components/LangSelector.js";
 import { login as apiLogin } from "../services/api.js";
 import homeIcon from "../assets/icons/home-1-svgrepo-com.svg";
+import SolarisP from "../assets/images/SolarisP.png";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -72,8 +73,12 @@ export default function Login() {
             <div className={style.iconBoxTiny}>
               {isLight ? <Moon size={12} className={style.textPrimary} /> : <Sun size={12} className={style.textPrimary} />}
             </div>
-            <span className={style.logoText}>Solaris Potiguar</span>
           </button>
+          <img
+            src={SolarisP}
+            alt="Solaris Potiguar"
+            className="h-8 w-auto object-contain"
+          />
           <LangSelector />
         </div>
       </header>

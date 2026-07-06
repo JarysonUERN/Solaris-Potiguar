@@ -5,6 +5,7 @@ import { style } from "../styles/styles.js";
 import { useLanguage } from "../i18n/index.js";
 import LangSelector from "../components/LangSelector.js";
 import { register as apiRegister, login } from "../services/api.js";
+import SolarisP from "../assets/images/SolarisP.png";
 
 export default function Register() {
   const navigate = useNavigate();
@@ -99,10 +100,11 @@ export default function Register() {
     <div className={style.pageFlex}>
       <header className={style.headerFlexBetween}>
         <button onClick={() => navigate("/")} className={style.flexCenter}>
-          <div className={style.iconBoxTiny}>
-            <Sun size={12} className={style.textPrimary} />
-          </div>
-          <span className={style.logoText}>Solaris Potiguar</span>
+          <img
+            src={SolarisP}
+            alt="Solaris Potiguar"
+            className="h-8 w-auto object-contain"
+          />
         </button>
         <div className="flex items-center gap-2">
           <LangSelector />
