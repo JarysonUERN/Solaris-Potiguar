@@ -26,19 +26,36 @@ function authHeaders(): Record<string, string> {
 }
 
 async function request<T>(url: string, options: RequestInit = {}): Promise<T> {
-  const res = await fetch(url, {
-    ...options,
-    headers: { ...authHeaders(), ...(options.headers as Record<string, string>) },
-  });
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 15000);
 
-  const body = await res.json();
+  try {
+    const res = await fetch(url, {
+      ...options,
+      signal: controller.signal,
+      headers: { ...authHeaders(), ...(options.headers as Record<string, string>) },
+    });
 
-  if (!res.ok) {
-    const msg = body.error || body.errors?.join?.(". ") || "Erro de servidor";
-    throw new Error(msg);
+    const contentType = res.headers.get("content-type") || "";
+
+    if (!contentType.includes("application/json")) {
+      const text = await res.text();
+      throw new Error(
+        `Resposta inesperada do servidor (${res.status}): ${text.slice(0, 120)}`
+      );
+    }
+
+    const body = await res.json();
+
+    if (!res.ok) {
+      const msg = body.error || body.errors?.join?.(". ") || "Erro de servidor";
+      throw new Error(msg);
+    }
+
+    return body as T;
+  } finally {
+    clearTimeout(timer);
   }
-
-  return body as T;
 }
 
 export async function searchCity(query: string): Promise<CitySuggestion[]> {
