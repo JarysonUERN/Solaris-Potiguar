@@ -184,6 +184,7 @@ const en: Record<string, string> = {
   "dashboard.stats.battery": "Battery",
   "dashboard.stats.estimated": "estimated",
   "dashboard.update.error": "Error updating.",
+  "dashboard.location": "Location",
 
   "result.dashboard": "Dashboard",
   "result.orchestrator": "ORCHESTRATOR SYNTHESIS",

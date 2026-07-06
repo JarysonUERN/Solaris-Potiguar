@@ -10,6 +10,7 @@ import type { PropertyConfig, AnalysisResponse, User, Property } from "../types/
 import { style } from "../styles/styles.js";
 import { useLanguage } from "../i18n/index.js";
 import homeIcon from "../assets/icons/home-1-svgrepo-com.svg";
+import SolarisP from "../assets/images/SolarisP.png";
 import { fetchUser, fetchProperty, fetchClimate, createAnalysis, fetchAnalysesByProperty, updateUser } from "../services/api.js";
 
 function getStoredPropId(): number | null {
@@ -95,25 +96,41 @@ export default function Dashboard() {
 
     const init = async () => {
       try {
+        console.log("[Dashboard] init start", { propId });
         const userData = await fetchUser();
+        console.log("[Dashboard] user fetched", userData);
         setUser(userData);
         setEditingName(userData.full_name);
+        console.log("[Dashboard] after setUser, propId=", propId);
 
         if (propId) {
-          const [propRes, , historyRes] = await Promise.all([
+          console.log("[Dashboard] fetching property", propId);
+          const [propRes, climateRes, historyRes] = await Promise.all([
             fetchProperty(propId),
-            fetchClimate(propId).catch(() => null),
-            fetchAnalysesByProperty(propId).catch(() => [] as AnalysisResponse[]),
+            fetchClimate(propId).catch((e) => {
+              console.warn("[Dashboard] climate failed", e);
+              return null;
+            }),
+            fetchAnalysesByProperty(propId).catch((e) => {
+              console.warn("[Dashboard] history failed", e);
+              return [] as AnalysisResponse[];
+            }),
           ]);
 
+          console.log("[Dashboard] property fetched", propRes);
           setProperty(propRes.property);
           setAnalyses(Array.isArray(historyRes) ? historyRes : []);
         }
-      } catch {
+
+        console.log("[Dashboard] about to finally");
+      } catch (err) {
+        console.error("[Dashboard] init error", err);
         localStorage.removeItem("solaris-auth");
         navigate("/login", { replace: true });
       } finally {
+        console.log("[Dashboard] finally running");
         setLoading(false);
+        console.log("[Dashboard] setLoading(false) done");
       }
     };
 
@@ -191,35 +208,35 @@ export default function Dashboard() {
   return (
     <div className={style.page}>
       <header className={style.header}>
-        <div className={style.headerInner}>
-          <div className={style.flexCenterGap3}>
+        <div className={`${style.headerInner} relative flex w-full items-center justify-between`}>
+          <div className="flex items-center gap-2">
             <button
               type="button"
               onClick={() => navigate("/")}
-              className="mr-1 flex h-8 w-8 items-center justify-center rounded-lg border border-border bg-card/80 transition-colors hover:border-primary/30 hover:bg-primary/10"
+              className="flex h-8 w-8 items-center justify-center rounded-lg border border-border bg-card/80 transition-colors hover:border-primary/30 hover:bg-primary/10"
               aria-label={t("dashboard.header.back")}
             >
               <img src={homeIcon} alt={t("dashboard.header.back")} className="h-4 w-4" />
             </button>
             <ThemeToggle size={13} />
-            <LangSelector />
-            <div>
-              <div className={style.subtitleHeader}>{config.name}</div>
-              <div className={style.textLocation}>
-                <MapPin size={9} />
-                {config.city}
-              </div>
-            </div>
           </div>
-          <div className={style.textSpecs}>
-            <Cpu size={12} />
-            {config.capacity} kWp · {config.storage || "0"} kWh batt
+
+          <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
+            <img
+              src={SolarisP}
+              alt="Solaris Potiguar"
+              className="h-8 w-auto object-contain"
+            />
+          </div>
+
+          <div className="flex items-center">
+            <LangSelector />
           </div>
         </div>
       </header>
 
-      <div className="flex">
-        <aside className="w-72 border-r border-border min-h-[calc(100vh-4rem)] p-6 flex flex-col gap-5 flex-shrink-0">
+      <div className="flex min-h-[calc(100vh-4rem)]">
+        <aside className="w-72 border-r border-border p-6 flex flex-col gap-5 flex-shrink-0">
           <div className="flex flex-col items-center gap-3">
             <div className="w-20 h-20 rounded-full bg-primary/15 flex items-center justify-center">
               <span className="text-2xl font-bold text-primary">{initials}</span>
@@ -284,130 +301,163 @@ export default function Dashboard() {
           </button>
         </aside>
 
-        <main className="flex-1 px-6 py-8 max-w-3xl space-y-6">
-          {activeClimate && (
-            <div className={style.card}>
-              <div className={`${style.flexBetween} mb-4`}>
-                <div className={style.textSectionLabel}>
-                  <CloudSun size={12} className={style.textPrimary} />
-                  {t("dashboard.climate.now")} · {config.city.toUpperCase()}
-                </div>
-                <div className={style.forecastTime}>Open-Meteo API</div>
-              </div>
-
-              <div className="flex items-center gap-4 mb-5">
-                <Sun size={40} className={style.textPrimary} />
-                <div>
-                  <div className={style.text4xlMono}>{activeClimate.temp}°</div>
-                  <div className={style.textSmMuted}>{activeClimate.condition}</div>
-                </div>
-                <div className={style.gridStats}>
-                  <div className={style.textXs}>{t("dashboard.climate.uv")}</div>
-                  <div className={style.textMonoFg}>{activeClimate.uv}</div>
-                  <div className={style.textXs}>{t("dashboard.climate.wind")}</div>
-                  <div className={style.textMonoFg}>{activeClimate.wind} km/h</div>
-                  <div className={style.textXs}>{t("dashboard.climate.humidity")}</div>
-                  <div className={style.textMonoFg}>{activeClimate.humidity}%</div>
-                </div>
-              </div>
-
-              <div className={style.gridCols6}>
-                {activeClimate.forecast.map((f) => (
-                  <div key={f.hour} className={style.flexCol}>
-                    <div className={style.forecastTime}>{f.hour}</div>
-                    <WeatherIcon type={f.icon} size={16} />
-                    <div className={style.textMonoFg}>{f.temp}°</div>
+        <div className="flex-1 flex flex-col">
+          <main className="flex-1 px-6 py-8 max-w-3xl space-y-6">
+            {activeClimate && (
+              <div className={style.card}>
+                <div className={`${style.flexBetween} mb-4`}>
+                  <div className={style.textSectionLabel}>
+                    <CloudSun size={12} className={style.textPrimary} />
+                    {t("dashboard.climate.now")} · {config.city.toUpperCase()}
                   </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          <button
-            onClick={handleAnalyze}
-            disabled={analyzing || !propId}
-            className={`${style.btnAnalyze} ${
-              analyzing || !propId ? style.btnAnalyzeDisabled : style.btnAnalyzeActive
-            }`}
-          >
-            {analyzing ? (
-              <>
-                <RefreshCw size={18} className="animate-spin" />
-                {t("dashboard.analyzing")}
-              </>
-            ) : (
-              <>
-                <Sparkles size={18} />
-                {t("dashboard.analyze")}
-              </>
-            )}
-          </button>
-
-          {latestAnalysis && (
-            <div
-              className={style.cardResult}
-              onClick={() => navigate("/result", { state: { analysis: latestAnalysis } })}
-            >
-              <div className={`${style.flexBetween} mb-3`}>
-                <div className={style.resultHeader}>
-                  <Brain size={12} />
-                  {t("dashboard.recommendation")} · {new Date(latestAnalysis.date).toLocaleString("pt-BR")}
+                  <div className={style.forecastTime}>Open-Meteo API</div>
                 </div>
-                <ChevronRight size={16} className={style.chevronIcon} />
-              </div>
-              <p className="text-foreground leading-relaxed">{latestAnalysis.insights.executive_summary}</p>
-              <div className={`mt-3 ${style.analysisCard}`}>
-                <Layers size={11} />
-                {t("dashboard.reasoning")}
-              </div>
-            </div>
-          )}
 
-          {analyses.length > 1 && (
-            <div>
-              <div className={style.analysisHistoryHeader}>
-                <History size={11} />
-                {t("dashboard.history")}
-              </div>
-              <div className={style.spaceY2}>
-                {analyses.slice(1, 4).map((a) => (
-                  <button
-                    key={a.id}
-                    onClick={() => navigate("/result", { state: { analysis: a } })}
-                    className={style.cardHistory}
-                  >
-                    <div>
-                      <div className={style.textResultMuted}>{new Date(a.date).toLocaleString("pt-BR")}</div>
-                      <div className={style.textResultFg}>{a.insights.executive_summary.slice(0, 80)}...</div>
+                <div className="flex items-center gap-4 mb-5">
+                  <Sun size={40} className={style.textPrimary} />
+                  <div>
+                    <div className={style.text4xlMono}>{activeClimate.temp}°</div>
+                    <div className={style.textSmMuted}>{activeClimate.condition}</div>
+                  </div>
+                  <div className={style.gridStats}>
+                    <div className={style.textXs}>{t("dashboard.climate.uv")}</div>
+                    <div className={style.textMonoFg}>{activeClimate.uv}</div>
+                    <div className={style.textXs}>{t("dashboard.climate.wind")}</div>
+                    <div className={style.textMonoFg}>{activeClimate.wind} km/h</div>
+                    <div className={style.textXs}>{t("dashboard.climate.humidity")}</div>
+                    <div className={style.textMonoFg}>{activeClimate.humidity}%</div>
+                  </div>
+                </div>
+
+                <div className={style.gridCols6}>
+                  {activeClimate.forecast.map((f) => (
+                    <div key={f.hour} className={style.flexCol}>
+                      <div className={style.forecastTime}>{f.hour}</div>
+                      <WeatherIcon type={f.icon} size={16} />
+                      <div className={style.textMonoFg}>{f.temp}°</div>
                     </div>
-                    <ChevronRight size={14} className={style.btnBack} />
-                  </button>
-                ))}
+                  ))}
+                </div>
               </div>
-            </div>
-          )}
+            )}
 
-          {latestAnalysis && (
-            <div className={style.gridCols3}>
-              {[
-                { labelKey: "dashboard.stats.generation", value: `${latestAnalysis.energy.generation_kwh.toFixed(1)} kWh`, subKey: "dashboard.stats.estimated", icon: <Sun size={13} className={style.textPrimary} />, color: "text-primary" },
-                { labelKey: "dashboard.stats.consumption", value: `${latestAnalysis.energy.consumption_kwh.toFixed(1)} kWh`, subKey: "dashboard.stats.estimated", icon: <Zap size={13} className={style.textBlue} />, color: "text-blue-400" },
-                { labelKey: "dashboard.stats.battery", value: latestAnalysis.battery.status === "not_applicable" ? "N/A" : `${latestAnalysis.battery.charge_kwh.toFixed(1)} kWh`, subKey: latestAnalysis.battery.status, icon: <Battery size={13} className={style.textAccent} />, color: "text-accent" },
-              ].map((stat) => (
-                <div key={stat.labelKey} className={style.cardSmall}>
-                  <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-2">
-                    {stat.icon}
-                    {t(stat.labelKey)}
+            <button
+              onClick={handleAnalyze}
+              disabled={analyzing || !propId}
+              className={`${style.btnAnalyze} ${analyzing || !propId ? style.btnAnalyzeDisabled : style.btnAnalyzeActive
+                }`}
+            >
+              {analyzing ? (
+                <>
+                  <RefreshCw size={18} className="animate-spin" />
+                  {t("dashboard.analyzing")}
+                </>
+              ) : (
+                <>
+                  <Sparkles size={18} />
+                  {t("dashboard.analyze")}
+                </>
+              )}
+            </button>
+
+            {latestAnalysis && (
+              <div
+                className={style.cardResult}
+                onClick={() => navigate("/result", { state: { analysis: latestAnalysis } })}
+              >
+                <div className={`${style.flexBetween} mb-3`}>
+                  <div className={style.resultHeader}>
+                    <Brain size={12} />
+                    {t("dashboard.recommendation")} · {new Date(latestAnalysis.date).toLocaleString("pt-BR")}
                   </div>
-                  <div className={`text-xl font-bold font-mono ${stat.color}`}>{stat.value}</div>
-                  <div className="text-[10px] text-muted-foreground mt-0.5 font-mono">
-                    {stat.subKey === "dashboard.stats.estimated" ? t(stat.subKey) : stat.subKey}
+                  <ChevronRight size={16} className={style.chevronIcon} />
+                </div>
+                <p className="text-foreground leading-relaxed">{latestAnalysis.insights.executive_summary}</p>
+                <div className={`mt-3 ${style.analysisCard}`}>
+                  <Layers size={11} />
+                  {t("dashboard.reasoning")}
+                </div>
+              </div>
+            )}
+
+            {analyses.length > 1 && (
+              <div>
+                <div className={style.analysisHistoryHeader}>
+                  <History size={11} />
+                  {t("dashboard.history")}
+                </div>
+                <div className={style.spaceY2}>
+                  {analyses.slice(1, 4).map((a) => (
+                    <button
+                      key={a.id}
+                      onClick={() => navigate("/result", { state: { analysis: a } })}
+                      className={style.cardHistory}
+                    >
+                      <div>
+                        <div className={style.textResultMuted}>{new Date(a.date).toLocaleString("pt-BR")}</div>
+                        <div className={style.textResultFg}>{a.insights.executive_summary.slice(0, 80)}...</div>
+                      </div>
+                      <ChevronRight size={14} className={style.btnBack} />
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+          </main>
+
+          <footer className="border-t border-border px-6 py-4">
+            <div className="max-w-3xl mx-auto flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2">
+                  <Cpu size={14} className="text-primary" />
+                  <div>
+                    <div className="text-[10px] text-muted-foreground uppercase tracking-wider">Sistema</div>
+                    <div className="text-sm font-bold font-mono text-foreground">{config.capacity} kWp · {config.storage || "0"} kWh</div>
                   </div>
                 </div>
-              ))}
+              </div>
+              <div className="flex items-center gap-6">
+                {latestAnalysis && (
+                  <>
+                    <div className="flex items-center gap-2">
+                      <Sun size={14} className="text-primary" />
+                      <div>
+                        <div className="text-[10px] text-muted-foreground uppercase tracking-wider">{t("dashboard.stats.generation")}</div>
+                        <div className="text-sm font-bold font-mono text-primary">{latestAnalysis.energy.generation_kwh.toFixed(1)} kWh</div>
+                      </div>
+                    </div>
+                    <div className="w-px h-8 bg-border" />
+                    <div className="flex items-center gap-2">
+                      <Zap size={14} className="text-blue-400" />
+                      <div>
+                        <div className="text-[10px] text-muted-foreground uppercase tracking-wider">{t("dashboard.stats.consumption")}</div>
+                        <div className="text-sm font-bold font-mono text-blue-400">{latestAnalysis.energy.consumption_kwh.toFixed(1)} kWh</div>
+                      </div>
+                    </div>
+                    <div className="w-px h-8 bg-border" />
+                    <div className="flex items-center gap-2">
+                      <Battery size={14} className="text-accent" />
+                      <div>
+                        <div className="text-[10px] text-muted-foreground uppercase tracking-wider">{t("dashboard.stats.battery")}</div>
+                        <div className="text-sm font-bold font-mono text-accent">
+                          {latestAnalysis.battery.status === "not_applicable" ? "N/A" : `${latestAnalysis.battery.charge_kwh.toFixed(1)} kWh`}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="w-px h-8 bg-border" />
+                  </>
+                )}
+                <div>
+                  <div className={style.subtitleHeader}>{config.name}</div>
+                  <div className={style.textLocation}>
+                    <MapPin size={9} />
+                    {config.city}
+                  </div>
+                </div>
+              </div>
             </div>
-          )}
-        </main>
+          </footer>
+        </div>
       </div>
     </div>
   );
