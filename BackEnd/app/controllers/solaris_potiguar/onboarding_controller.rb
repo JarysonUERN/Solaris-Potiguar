@@ -19,7 +19,8 @@ module SolarisPotiguar
 
     def onboarding_params
       params.permit(
-        :farm_name, :city, :installed_power_kwp,
+        :farm_name, :city, :latitude, :longitude,
+        :installed_power_kwp,
         :has_battery, :battery_capacity_kwh,
         :average_monthly_consumption_kwh,
         :operation_type, :peak_consumption_period,

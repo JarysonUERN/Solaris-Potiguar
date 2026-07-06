@@ -32,7 +32,8 @@ module Api
         :installed_power_kwp, :has_battery, :battery_capacity_kwh,
         :average_daily_consumption_kwh, :operation_type,
         :peak_consumption_period, :flexible_operation,
-        main_equipments: [], :operation_description
+        :operation_description,
+        main_equipments: []
       )
     end
 
