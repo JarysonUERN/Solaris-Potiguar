@@ -16,6 +16,7 @@ class EnergyCalculatorService
       generation_kwh: generation.round(3),
       consumption_kwh: consumption.round(3),
       balance_kwh: balance.round(3),
+      estimated_peak_period: peak_period,
       battery_charge_kwh: battery_charge(balance).round(3),
       battery_status: battery_status(balance),
       savings_kwh: savings[:kwh].round(3),
@@ -34,6 +35,16 @@ class EnergyCalculatorService
 
   def estimated_consumption
     @property.average_daily_consumption_kwh
+  end
+
+  def peak_period
+    lon = @property.longitude.to_f
+    standard_meridian = -45.0
+    offset_minutes = ((lon - standard_meridian) * 4).round
+    solar_noon_hour = 12.0 + (offset_minutes / 60.0)
+    peak_start = (solar_noon_hour - 2).floor
+    peak_end = (solar_noon_hour + 2).ceil
+    "#{format('%02d:00', peak_start)} - #{format('%02d:00', peak_end)}"
   end
 
   def calculate_savings(balance)
