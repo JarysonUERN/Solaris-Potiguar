@@ -86,7 +86,7 @@ The goal is not to replace existing Energy Management Systems, but to make intel
 | PostgreSQL | 16 Alpine |
 | Authentication | JWT (bcrypt + HS256) |
 | Weather | Open-Meteo API |
-| AI | Fireworks AI — 4 agents (Llama 3) |
+| AI | Fireworks AI — 4 agents (gpt-oss-120b) |
 | Email | Action Mailer + SMTP |
 | Docker | Multi-stage with entrypoint |
 
