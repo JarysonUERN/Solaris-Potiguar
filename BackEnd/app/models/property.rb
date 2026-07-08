@@ -16,7 +16,7 @@ class Property < ApplicationRecord
     has_battery? ? self[:battery_capacity_kwh] : 0
   end
 
-  OPERATION_TYPES = %w[irrigation livestock poultry agroindustry commerce residential other].freeze
+  OPERATION_TYPES = %w[irrigacao avicultura comercio residencial agroindustria other].freeze
   PEAK_PERIODS = %w[morning afternoon night].freeze
 
   validates :operation_type, inclusion: { in: OPERATION_TYPES }, allow_blank: true

@@ -16,7 +16,10 @@ class ApplicationController < ActionController::Base
       @current_user = User.find_by(id: decoded["user_id"])
     end
 
-    render json: { error: "Não autorizado" }, status: :unauthorized unless @current_user
+    unless @current_user
+      render json: { error: "Não autorizado" }, status: :unauthorized
+      return
+    end
   end
 
   def current_user

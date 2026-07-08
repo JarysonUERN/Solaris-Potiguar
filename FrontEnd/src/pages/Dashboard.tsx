@@ -1,81 +1,38 @@
-import { useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Sun, CloudSun, Cloud, Brain, History, Layers, Cpu, MapPin,
   RefreshCw, Sparkles, ChevronRight, Zap, Battery
 } from "lucide-react";
 import ThemeToggle from "../components/ThemeToggle.js";
-import type { PropertyConfig, Analysis } from "../types/index.js";
+import LangSelector from "../components/LangSelector.js";
+import type { PropertyConfig, AnalysisResponse, User, Property } from "../types/index.js";
 import { style } from "../styles/styles.js";
+import { useLanguage } from "../i18n/index.js";
 import homeIcon from "../assets/icons/home-1-svgrepo-com.svg";
+import SolarisP from "../assets/images/SolarisP.png";
+import { fetchUser, fetchProperty, fetchClimate, createAnalysis, fetchAnalysesByProperty, updateUser } from "../services/api.js";
 
-const mockAnalyses: Analysis[] = [
-  {
-    id: "a1",
-    time: "Hoje, 14:23",
-    summary: "Geração excelente — acumule para a noite",
-    agents: {
-      meteo:
-        "Irradiância solar atual de 847 W/m². Temperatura ambiente de 32°C com índice UV 9. Previsão para as próximas 6h: nuvens esparsas entre 16h e 17h30, redução estimada de 18% na geração nesse período. Nenhuma precipitação prevista. Condições ideais de geração até o pôr do sol às 17h51.",
-      consumption:
-        "Consumo atual em 2,3 kW, dentro do padrão histórico para terça-feira à tarde. Com base no perfil cadastrado (pico noturno entre 19h e 22h), a demanda deve escalar para 4,1 kW após as 18h. O sistema está consumindo 31% abaixo da geração atual — excedente disponível para armazenamento.",
-      storage:
-        "Bateria em 67% de carga (8,0 kWh de 12 kWh). Taxa de carga atual: 1,8 kW. Com o excedente disponível, a bateria deve atingir 95% até as 17h, antes da queda de geração. Capacidade suficiente para cobrir o pico noturno projetado sem recorrer à rede.",
-    },
-    synthesis:
-      "Condições excelentes de geração hoje. Mantenha cargas não essenciais ligadas agora para aproveitar o excedente solar. Sua bateria vai carregar completamente antes do anoitecer e terá energia suficiente para o pico da noite sem custo da rede. Economia estimada hoje: R$ 18,40.",
-  },
-  {
-    id: "a2",
-    time: "Hoje, 08:07",
-    summary: "Manhã nublada — priorize o essencial",
-    agents: {
-      meteo:
-        "Céu encoberto com nebulosidade em 80%. Irradiância reduzida para 210 W/m². Previsão de abertura do sol após 10h30, com potencial de recuperação para 650 W/m² no período da tarde.",
-      consumption:
-        "Consumo matinal em 3,1 kW — ligeiramente acima do padrão por conta do dia nublado e uso de iluminação artificial. Geração atual cobre apenas 35% da demanda.",
-      storage:
-        "Bateria em 54% após cobrir parte do consumo noturno. Recomendável poupar armazenamento para cobrir eventual tarde nublada.",
-    },
-    synthesis:
-      "Manhã desafiadora. A geração está baixa agora, mas o sol deve abrir por volta das 10h30. Desligue aparelhos não essenciais até lá e preserve a bateria — ela pode ser necessária se a tarde vier encoberta novamente.",
-  },
-  {
-    id: "a3",
-    time: "Ontem, 19:41",
-    summary: "Bateria suficiente para a noite toda",
-    agents: {
-      meteo:
-        "Dia de sol pleno encerrado. Geração acumulada hoje: 38,2 kWh — 12% acima da média sazonal.",
-      consumption:
-        "Pico noturno projetado entre 19h e 22h: estimativa de 11,4 kWh de demanda. Consumo acumulado do dia dentro do esperado.",
-      storage:
-        "Bateria em 98% (11,7 kWh). Capacidade plenamente suficiente para cobrir o pico projetado e ainda manter reserva de 15% para a madrugada.",
-    },
-    synthesis:
-      "Excelente dia de geração. Sua bateria está praticamente cheia e vai cobrir toda a noite sem precisar da rede elétrica. Você evitou o horário de ponta tarifária completamente hoje — economia estimada de R$ 23,10.",
-  },
-];
+function getStoredPropId(): number | null {
+  try {
+    const raw = localStorage.getItem("solaris-auth");
+    if (!raw) return null;
+    const data = JSON.parse(raw);
+    return data.property_id ?? null;
+  } catch {
+    return null;
+  }
+}
 
-const mockUser = {
-  name: "João Silva",
-  email: "demo@solaris.com",
-};
-
-const weatherData = {
-  temp: 34,
-  condition: "Ensolarado",
-  uv: 9,
-  wind: 12,
-  humidity: 58,
-  forecast: [
-    { hour: "Agora", icon: "sun", temp: 34 },
-    { hour: "15h", icon: "sun", temp: 35 },
-    { hour: "16h", icon: "cloud-sun", temp: 33 },
-    { hour: "17h", icon: "cloud-sun", temp: 31 },
-    { hour: "18h", icon: "cloud", temp: 29 },
-    { hour: "19h", icon: "cloud", temp: 27 },
-  ],
+type ClimateDisplay = {
+  temp: number;
+  condition: string;
+  uv: number | null;
+  wind: number | null;
+  humidity: number | null;
+  irradiation: number;
+  cloud_cover: number;
+  is_real_data: boolean;
 };
 
 function WeatherIcon({ type, size = 20 }: { type: string; size?: number }) {
@@ -84,87 +41,214 @@ function WeatherIcon({ type, size = 20 }: { type: string; size?: number }) {
   return <Cloud size={size} className={style.textMuted} />;
 }
 
+function buildWeatherDisplay(analysis: AnalysisResponse): ClimateDisplay {
+  const weather = analysis.weather || analysis.climate!;
+  const irradiation = weather.solar_irradiation;
+  const cloud_cover = weather.cloud_cover;
+  const temperature = weather.temperature_max;
+
+  const is_real_data = irradiation > 0 || cloud_cover > 0 || temperature > 0;
+
+  let condition = "Ensolarado";
+  if (cloud_cover > 60) condition = "Nublado";
+  else if (cloud_cover > 30) condition = "Parcialmente nublado";
+  if (!is_real_data) condition = "Sem dados climáticos";
+
+  return {
+    temp: Math.round(temperature),
+    condition,
+    uv: is_real_data && irradiation > 4 ? Math.round(irradiation * 2) : null,
+    wind: is_real_data ? 12 : null,
+    humidity: is_real_data ? Math.round(Math.max(20, Math.min(95, 100 - irradiation * 8))) : null,
+    irradiation,
+    cloud_cover,
+    is_real_data,
+  };
+}
+
 export default function Dashboard() {
   const navigate = useNavigate();
-  const location = useLocation();
-  const savedConfig = (location.state as { config?: PropertyConfig })?.config;
+  const { t } = useLanguage();
 
-  const config: PropertyConfig = savedConfig ?? {
-    name: "Fazenda Demo",
-    city: "Mossoró, RN",
-    capacity: "8.5",
-    storage: "12",
-    consumption: "450",
-    profile: "residencial",
-  };
-
-  const [analyses, setAnalyses] = useState<Analysis[]>(mockAnalyses);
+  const [analyses, setAnalyses] = useState<AnalysisResponse[]>([]);
   const [analyzing, setAnalyzing] = useState(false);
   const [showEditForm, setShowEditForm] = useState(false);
-  const [userName, setUserName] = useState(mockUser.name);
-  const [userEmail, setUserEmail] = useState(mockUser.email);
-  const [userPassword, setUserPassword] = useState("");
+  const [user, setUser] = useState<User | null>(null);
+  const [property, setProperty] = useState<Property | null>(null);
+  const [editingName, setEditingName] = useState("");
+  const [editingPassword, setEditingPassword] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [activePropId, setActivePropId] = useState<number | null>(null);
 
-  const handleAnalyze = () => {
-    setAnalyzing(true);
-    setTimeout(() => {
-      const newAnalysis: Analysis = {
-        id: `a${Date.now()}`,
-        time: "Agora",
-        summary: "Geração excelente — acumule para a noite",
-        agents: mockAnalyses[0]!.agents,
-        synthesis: mockAnalyses[0]!.synthesis,
+  useEffect(() => {
+    const token = localStorage.getItem("solaris-auth");
+    if (!token) {
+      navigate("/login", { replace: true });
+      return;
+    }
+
+    const init = async () => {
+      try {
+        const userData = await fetchUser();
+        console.log("[Dashboard] user fetched", userData);
+        setUser(userData);
+        setEditingName(userData.full_name);
+
+        let pid = getStoredPropId();
+        if (pid === null && userData.property_id) {
+          pid = userData.property_id;
+          const raw = localStorage.getItem("solaris-auth");
+          if (raw) {
+            const session = JSON.parse(raw);
+            session.property_id = userData.property_id;
+            localStorage.setItem("solaris-auth", JSON.stringify(session));
+          }
+        }
+
+        if (pid === null) {
+          navigate("/onboarding", { replace: true });
+          return;
+        }
+
+        setActivePropId(pid);
+
+        console.log("[Dashboard] fetching property", pid);
+        const [propRes, climateRes, historyRes] = await Promise.all([
+          fetchProperty(pid),
+          fetchClimate(pid).catch((e) => {
+            console.warn("[Dashboard] climate failed", e);
+            return null;
+          }),
+          fetchAnalysesByProperty(pid).catch((e) => {
+            console.warn("[Dashboard] history failed", e);
+            return [] as AnalysisResponse[];
+          }),
+        ]);
+
+        console.log("[Dashboard] property fetched", propRes);
+        setProperty(propRes.property);
+        setAnalyses(Array.isArray(historyRes) ? historyRes : []);
+      } catch (err) {
+        console.error("[Dashboard] init error", err);
+        localStorage.removeItem("solaris-auth");
+        navigate("/login", { replace: true });
+      } finally {
+        console.log("[Dashboard] finally running");
+        setLoading(false);
+      }
+    };
+
+    init();
+  }, [navigate]);
+
+  const config: PropertyConfig = property
+    ? {
+        name: property.farm_name,
+        city: property.city,
+        capacity: String(property.installed_power_kwp),
+        storage: String(property.battery_capacity_kwh),
+        consumption: String(property.average_daily_consumption_kwh * 30),
+        profile: (property.operation_type as PropertyConfig["profile"]) || "residencial",
+        routine: property.operation_description || "",
+      }
+    : {
+        name: t("dashboard.loading"),
+        city: "",
+        capacity: "0",
+        storage: "0",
+        consumption: "0",
+        profile: "residencial",
+        routine: "",
       };
-      setAnalyses([newAnalysis, ...analyses]);
+
+  const handleAnalyze = async () => {
+    if (!activePropId) return;
+    setAnalyzing(true);
+    setError("");
+
+    try {
+      const analysis = await createAnalysis(activePropId);
+      setAnalyses([analysis, ...analyses]);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : t("dashboard.analyze.error"));
+    } finally {
       setAnalyzing(false);
-    }, 2800);
+    }
   };
 
-  const initials = userName
+  const handleSaveUser = async () => {
+    if (!user) return;
+    try {
+      await updateUser({ full_name: editingName });
+      setUser({ ...user, full_name: editingName });
+      setShowEditForm(false);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : t("dashboard.update.error"));
+    }
+  };
+
+  const initials = (user?.full_name || "??")
     .split(" ")
     .map((n) => n[0])
     .join("")
     .slice(0, 2)
     .toUpperCase();
 
+  const latestAnalysis = analyses[0];
+  const activeClimate = latestAnalysis
+    ? buildWeatherDisplay(latestAnalysis)
+    : null;
+
+  if (loading) {
+    return (
+      <div className={style.page}>
+        <div className="flex items-center justify-center min-h-screen text-muted-foreground">
+          {t("dashboard.loading")}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className={style.page}>
       <header className={style.header}>
-        <div className={style.headerInner}>
-          <div className={style.flexCenterGap3}>
+        <div className={`${style.headerInner} relative flex w-full items-center justify-between`}>
+          <div className="flex items-center gap-2">
             <button
               type="button"
               onClick={() => navigate("/")}
-              className="mr-1 flex h-8 w-8 items-center justify-center rounded-lg border border-border bg-card/80 transition-colors hover:border-primary/30 hover:bg-primary/10"
-              aria-label="Voltar para a landing page"
+              className="flex h-8 w-8 items-center justify-center rounded-lg border border-border bg-card/80 transition-colors hover:border-primary/30 hover:bg-primary/10"
+              aria-label={t("dashboard.header.back")}
             >
-              <img src={homeIcon} alt="Ícone home" className="h-4 w-4" />
+              <img src={homeIcon} alt={t("dashboard.header.back")} className="h-4 w-4" />
             </button>
             <ThemeToggle size={13} />
-            <div>
-              <div className={style.subtitleHeader}>{config.name}</div>
-              <div className={style.textLocation}>
-                <MapPin size={9} />
-                {config.city}
-              </div>
-            </div>
           </div>
-          <div className={style.textSpecs}>
-            <Cpu size={12} />
-            {config.capacity} kWp · {config.storage || "0"} kWh batt
+
+          <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
+            <img
+              src={SolarisP}
+              alt="Solaris Potiguar"
+              className="h-8 w-auto object-contain"
+            />
+          </div>
+
+          <div className="flex items-center">
+            <LangSelector />
           </div>
         </div>
       </header>
 
-      <div className="flex">
-        <aside className="w-72 border-r border-border min-h-[calc(100vh-4rem)] p-6 flex flex-col gap-5 flex-shrink-0">
+      <div className="flex min-h-[calc(100vh-4rem)]">
+        <aside className="w-72 border-r border-border p-6 flex flex-col gap-5 flex-shrink-0">
           <div className="flex flex-col items-center gap-3">
             <div className="w-20 h-20 rounded-full bg-primary/15 flex items-center justify-center">
               <span className="text-2xl font-bold text-primary">{initials}</span>
             </div>
             <div className="text-center">
-              <div className={style.subtitleHeader}>{userName}</div>
-              <div className={style.textXs}>{userEmail}</div>
+              <div className={style.subtitleHeader}>{user?.full_name || "..."}</div>
+              <div className={style.textXs}>{user?.email || "..."}</div>
             </div>
           </div>
 
@@ -174,46 +258,40 @@ export default function Dashboard() {
               showEditForm ? "text-muted-foreground" : "text-primary hover:text-primary/80"
             }`}
           >
-            {showEditForm ? "Cancelar" : "Alterar informações"}
+            {showEditForm ? t("dashboard.sidebar.cancel") : t("dashboard.sidebar.edit")}
           </button>
 
           {showEditForm && (
             <div className="space-y-3">
               <div>
-                <label className={style.label}>Nome</label>
+                <label className={style.label}>{t("dashboard.sidebar.label.name")}</label>
                 <input
                   type="text"
-                  value={userName}
-                  onChange={(e) => setUserName(e.target.value)}
+                  value={editingName}
+                  onChange={(e) => setEditingName(e.target.value)}
                   className={style.input}
                 />
               </div>
               <div>
-                <label className={style.label}>Email</label>
-                <input
-                  type="email"
-                  value={userEmail}
-                  onChange={(e) => setUserEmail(e.target.value)}
-                  className={style.input}
-                />
-              </div>
-              <div>
-                <label className={style.label}>Nova senha</label>
+                <label className={style.label}>{t("dashboard.sidebar.label.password")}</label>
                 <input
                   type="password"
-                  value={userPassword}
-                  onChange={(e) => setUserPassword(e.target.value)}
+                  value={editingPassword}
+                  onChange={(e) => setEditingPassword(e.target.value)}
                   className={style.input}
-                  placeholder="Deixe vazio para manter"
+                  placeholder={t("dashboard.sidebar.placeholder.password")}
                 />
               </div>
+              {error ? (
+                <div className="rounded-lg border border-red-500/20 bg-red-500/10 px-3 py-2 text-sm text-red-400">
+                  {error}
+                </div>
+              ) : null}
               <button
-                onClick={() => {
-                  setShowEditForm(false);
-                }}
+                onClick={handleSaveUser}
                 className={`${style.btnPrimarySm} w-full justify-center`}
               >
-                Salvar alterações
+                {t("dashboard.sidebar.save")}
               </button>
             </div>
           )}
@@ -224,128 +302,183 @@ export default function Dashboard() {
             onClick={() => navigate("/onboarding")}
             className="text-sm text-muted-foreground hover:text-foreground border border-border rounded-lg px-4 py-2 transition-colors w-full text-center"
           >
-            Refazer onboarding
+            {t("dashboard.sidebar.redo")}
           </button>
         </aside>
 
-        <main className="flex-1 px-6 py-8 max-w-3xl space-y-6">
-          <div className={style.card}>
-            <div className={`${style.flexBetween} mb-4`}>
-              <div className={style.textSectionLabel}>
-                <CloudSun size={12} className={style.textPrimary} />
-                CLIMA AGORA · {config.city.toUpperCase()}
-              </div>
-              <div className={style.forecastTime}>Open-Meteo API</div>
-            </div>
-
-            <div className="flex items-center gap-4 mb-5">
-              <Sun size={40} className={style.textPrimary} />
-              <div>
-                <div className={style.text4xlMono}>{weatherData.temp}°</div>
-                <div className={style.textSmMuted}>{weatherData.condition}</div>
-              </div>
-              <div className={style.gridStats}>
-                <div className={style.textXs}>UV</div>
-                <div className={style.textMonoFg}>{weatherData.uv}</div>
-                <div className={style.textXs}>Vento</div>
-                <div className={style.textMonoFg}>{weatherData.wind} km/h</div>
-                <div className={style.textXs}>Umidade</div>
-                <div className={style.textMonoFg}>{weatherData.humidity}%</div>
-              </div>
-            </div>
-
-            <div className={style.gridCols6}>
-              {weatherData.forecast.map((f) => (
-                <div key={f.hour} className={style.flexCol}>
-                  <div className={style.forecastTime}>{f.hour}</div>
-                  <WeatherIcon type={f.icon} size={16} />
-                  <div className={style.textMonoFg}>{f.temp}°</div>
+        <div className="flex-1 flex flex-col">
+          <main className="flex-1 px-6 py-8 max-w-3xl space-y-6">
+            {activeClimate && (
+              <div className={style.card}>
+                <div className={`${style.flexBetween} mb-4`}>
+                  <div className={style.textSectionLabel}>
+                    <CloudSun size={12} className={style.textPrimary} />
+                    {t("dashboard.climate.now")} · {config.city.toUpperCase()}
+                  </div>
+                  <div className={style.forecastTime}>
+                    {activeClimate.is_real_data ? "Open-Meteo API" : t("dashboard.climate.unavailable")}
+                  </div>
                 </div>
-              ))}
-            </div>
-          </div>
 
-          <button
-            onClick={handleAnalyze}
-            disabled={analyzing}
-            className={`${style.btnAnalyze} ${
-              analyzing ? style.btnAnalyzeDisabled : style.btnAnalyzeActive
-            }`}
-          >
-            {analyzing ? (
-              <>
-                <RefreshCw size={18} className="animate-spin" />
-                Agentes analisando…
-              </>
-            ) : (
-              <>
-                <Sparkles size={18} />
-                Analisar agora
-              </>
-            )}
-          </button>
-
-          {analyses.length > 0 && (
-            <div
-              className={style.cardResult}
-              onClick={() => navigate("/result", { state: { analysis: analyses[0] } })}
-            >
-              <div className={`${style.flexBetween} mb-3`}>
-                <div className={style.resultHeader}>
-                  <Brain size={12} />
-                  RECOMENDAÇÃO · {analyses[0]!.time}
-                </div>
-                <ChevronRight size={16} className={style.chevronIcon} />
-              </div>
-              <p className="text-foreground leading-relaxed">{analyses[0]!.synthesis}</p>
-              <div className={`mt-3 ${style.analysisCard}`}>
-                <Layers size={11} />
-                Ver raciocínio dos 3 agentes
-              </div>
-            </div>
-          )}
-
-          {analyses.length > 1 && (
-            <div>
-              <div className={style.analysisHistoryHeader}>
-                <History size={11} />
-                ANÁLISES ANTERIORES
-              </div>
-              <div className={style.spaceY2}>
-                {analyses.slice(1, 3).map((a) => (
-                  <button
-                    key={a.id}
-                    onClick={() => navigate("/result", { state: { analysis: a } })}
-                    className={style.cardHistory}
-                  >
-                    <div>
-                      <div className={style.textResultMuted}>{a.time}</div>
-                      <div className={style.textResultFg}>{a.summary}</div>
+                <div className="flex items-center gap-4 mb-5">
+                  <Sun size={40} className={style.textPrimary} />
+                  <div>
+                    <div className={style.text4xlMono}>{activeClimate.temp}°</div>
+                    <div className={style.textSmMuted}>{activeClimate.condition}</div>
+                  </div>
+                  <div className={style.gridStats}>
+                    <div className={style.textXs}>{t("dashboard.climate.uv")}</div>
+                    <div className={style.textMonoFg}>
+                      {activeClimate.uv !== null ? activeClimate.uv : t("dashboard.climate.na")}
                     </div>
-                    <ChevronRight size={14} className={style.btnBack} />
-                  </button>
-                ))}
+                    <div className={style.textXs}>{t("dashboard.climate.wind")}</div>
+                    <div className={style.textMonoFg}>
+                      {activeClimate.wind !== null ? `${activeClimate.wind} km/h` : t("dashboard.climate.na")}
+                    </div>
+                    <div className={style.textXs}>{t("dashboard.climate.humidity")}</div>
+                    <div className={style.textMonoFg}>
+                      {activeClimate.humidity !== null ? `${activeClimate.humidity}%` : t("dashboard.climate.na")}
+                    </div>
+                  </div>
+                </div>
+
+                <div className={style.gridCols6}>
+                  {[
+                    { label: t("dashboard.climate.irradiation"), value: `${activeClimate.irradiation.toFixed(1)} kWh/m²` },
+                    { label: t("dashboard.climate.cloud_cover"), value: `${activeClimate.cloud_cover.toFixed(0)}%` },
+                  ].map((stat) => (
+                    <div key={stat.label} className="p-2 rounded-lg border border-border bg-card/50 text-center col-span-3">
+                      <div className="text-[10px] text-muted-foreground font-mono uppercase tracking-wider">{stat.label}</div>
+                      <div className="text-sm font-bold font-mono text-foreground mt-0.5">{stat.value}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {error && !showEditForm ? (
+              <div className="rounded-lg border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-400">
+                {error}
+              </div>
+            ) : null}
+
+            <button
+              onClick={handleAnalyze}
+              disabled={analyzing || !activePropId}
+              className={`${style.btnAnalyze} ${analyzing || !activePropId ? style.btnAnalyzeDisabled : style.btnAnalyzeActive
+                }`}
+            >
+              {analyzing ? (
+                <>
+                  <RefreshCw size={18} className="animate-spin" />
+                  {t("dashboard.analyzing")}
+                </>
+              ) : (
+                <>
+                  <Sparkles size={18} />
+                  {t("dashboard.analyze")}
+                </>
+              )}
+            </button>
+
+            {latestAnalysis && (
+              <div
+                className={style.cardResult}
+                onClick={() => navigate("/result", { state: { analysis: latestAnalysis } })}
+              >
+                <div className={`${style.flexBetween} mb-3`}>
+                  <div className={style.resultHeader}>
+                    <Brain size={12} />
+                    {t("dashboard.recommendation")} · {new Date(latestAnalysis.analysis_date || latestAnalysis.date!).toLocaleString("pt-BR")}
+                  </div>
+                  <ChevronRight size={16} className={style.chevronIcon} />
+                </div>
+                <p className="text-foreground leading-relaxed">{latestAnalysis.recommendation?.summary || latestAnalysis.insights?.executive_summary}</p>
+                <div className={`mt-3 ${style.analysisCard}`}>
+                  <Layers size={11} />
+                  {t("dashboard.reasoning")}
+                </div>
+              </div>
+            )}
+
+            {analyses.length > 1 && (
+              <div>
+                <div className={style.analysisHistoryHeader}>
+                  <History size={11} />
+                  {t("dashboard.history")}
+                </div>
+                <div className={style.spaceY2}>
+                  {analyses.slice(1, 4).map((a) => (
+                    <button
+                      key={a.id}
+                      onClick={() => navigate("/result", { state: { analysis: a } })}
+                      className={style.cardHistory}
+                    >
+                      <div>
+                        <div className={style.textResultMuted}>{new Date(a.analysis_date || a.date!).toLocaleString("pt-BR")}</div>
+                        <div className={style.textResultFg}>{(a.recommendation?.summary || a.insights?.executive_summary || "").slice(0, 80)}...</div>
+                      </div>
+                      <ChevronRight size={14} className={style.btnBack} />
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+          </main>
+
+          <footer className="border-t border-border px-6 py-4">
+            <div className="max-w-3xl mx-auto flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2">
+                  <Cpu size={14} className="text-primary" />
+                  <div>
+                    <div className="text-[10px] text-muted-foreground uppercase tracking-wider">Sistema</div>
+                    <div className="text-sm font-bold font-mono text-foreground">{config.capacity} kWp · {config.storage || "0"} kWh</div>
+                  </div>
+                </div>
+              </div>
+              <div className="flex items-center gap-6">
+                {latestAnalysis && (
+                  <>
+                    <div className="flex items-center gap-2">
+                      <Sun size={14} className="text-primary" />
+                      <div>
+                        <div className="text-[10px] text-muted-foreground uppercase tracking-wider">{t("dashboard.stats.generation")}</div>
+                        <div className="text-sm font-bold font-mono text-primary">{latestAnalysis.energy.generation_kwh.toFixed(1)} kWh</div>
+                      </div>
+                    </div>
+                    <div className="w-px h-8 bg-border" />
+                    <div className="flex items-center gap-2">
+                      <Zap size={14} className="text-blue-400" />
+                      <div>
+                        <div className="text-[10px] text-muted-foreground uppercase tracking-wider">{t("dashboard.stats.consumption")}</div>
+                        <div className="text-sm font-bold font-mono text-blue-400">{latestAnalysis.energy.consumption_kwh.toFixed(1)} kWh</div>
+                      </div>
+                    </div>
+                    <div className="w-px h-8 bg-border" />
+                    <div className="flex items-center gap-2">
+                      <Battery size={14} className="text-accent" />
+                      <div>
+                        <div className="text-[10px] text-muted-foreground uppercase tracking-wider">{t("dashboard.stats.battery")}</div>
+                        <div className="text-sm font-bold font-mono text-accent">
+                          {latestAnalysis.battery.status === "not_applicable" ? "N/A" : `${latestAnalysis.battery.charge_kwh.toFixed(1)} kWh`}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="w-px h-8 bg-border" />
+                  </>
+                )}
+                <div>
+                  <div className={style.subtitleHeader}>{config.name}</div>
+                  <div className={style.textLocation}>
+                    <MapPin size={9} />
+                    {config.city}
+                  </div>
+                </div>
               </div>
             </div>
-          )}
-
-          <div className={style.gridCols3}>
-            {[
-              { label: "Geração", value: "6,2 kW", sub: "atual", icon: <Sun size={13} className={style.textPrimary} />, color: "text-primary" },
-              { label: "Consumo", value: "2,3 kW", sub: "atual", icon: <Zap size={13} className={style.textBlue} />, color: "text-blue-400" },
-              { label: "Bateria", value: "67%", sub: "8,0 / 12 kWh", icon: <Battery size={13} className={style.textAccent} />, color: "text-accent" },
-            ].map((stat) => (
-              <div key={stat.label} className={style.cardSmall}>
-                <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-2">
-                  {stat.icon}
-                  {stat.label}
-                </div>
-                <div className={`text-xl font-bold font-mono ${stat.color}`}>{stat.value}</div>
-                <div className="text-[10px] text-muted-foreground mt-0.5 font-mono">{stat.sub}</div>
-              </div>
-            ))}
-          </div>
-        </main>
+          </footer>
+        </div>
       </div>
     </div>
   );

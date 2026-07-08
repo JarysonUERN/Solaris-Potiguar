@@ -211,6 +211,27 @@ Essa funcionalidade fica prevista para versões futuras.
 
 ---
 
+# BR019 — O relatório diário é enviado automaticamente para todos os usuários
+
+Todos os dias às 05:00 UTC, o n8n dispara uma requisição para o endpoint interno `/api/daily/send_reports`.
+
+O sistema então:
+1. Itera todos os usuários com propriedades cadastradas
+2. Para cada propriedade, executa análise completa (clima + energia + 4 agentes AI)
+3. Envia um e-mail com o resumo para cada usuário
+
+**Observação:** Se uma propriedade não possuir coordenadas (latitude/longitude), a análise é pulada e registrada como erro.
+
+---
+
+# BR020 — O relatório diário é autenticado por API Key
+
+O endpoint `/api/daily/send_reports` não utiliza JWT (autenticação de usuário), mas sim uma **API Key** compartilhada via variável de ambiente `DAILY_ANALYSIS_API_KEY`.
+
+A chave é enviada no header `X-API-Key` e comparada de forma segura (constant-time) com o valor esperado.
+
+---
+
 # BR018 — O objetivo do sistema é apoiar decisões
 
 O Solaris Potiguar é uma plataforma de apoio à decisão.

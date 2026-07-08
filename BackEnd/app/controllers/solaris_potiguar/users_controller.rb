@@ -24,13 +24,15 @@ module SolarisPotiguar
     end
 
     def serialize_user(user)
+      property = user.properties.first
       {
         id: user.id,
         full_name: user.full_name,
         email: user.email,
         phone: user.phone,
         has_whatsapp: user.has_whatsapp,
-        cpf: user.cpf
+        cpf: user.cpf,
+        property_id: property&.id
       }
     end
   end

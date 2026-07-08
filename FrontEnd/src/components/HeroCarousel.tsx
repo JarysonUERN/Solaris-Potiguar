@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Brain, Sun, Battery, Zap, ChevronLeft, ChevronRight } from "lucide-react";
+import { useLanguage } from "../i18n/index.js";
 import { style } from "../styles/styles.js";
 
 import orchestratorImg from "../assets/images/Orquestration.jpg";
@@ -7,63 +8,57 @@ import solarImg from "../assets/images/stock image 3.jpg";
 import storageImg from "../assets/images/storage-agent.jpg";
 import consumptionImg from "../assets/images/comsuption-agent.jpg";
 
-interface Slide {
-  icon: React.ReactNode;
-  label: string;
-  body: React.ReactNode;
-  img: string;
-  iconBg: string;
-  labelClassName: string;
-}
-
-const slides: Slide[] = [
-  {
-    icon: <Brain size={14} className={"text-purple-400"} />,
-    label: "Orquestrador · agora",
-    body: (
-      <>
-        "Condições excelentes. Mantenha as cargas ligadas agora — sua bateria vai carregar antes do anoitecer. Economia estimada hoje:{" "}
-        <span className="text-primary font-semibold">R$ 18,40</span>."
-      </>
-    ),
-    img: orchestratorImg,
-    iconBg: style.iconBoxPurple,
-    labelClassName: "text-purple-400",
-  },
-  {
-    icon: <Sun size={14} className="text-yellow-400" />,
-    label: "Geração Solar · agora",
-    body: '"Irradiância solar em 847 W/m². Nuvens esparsas previstas após 16h com redução estimada de 18%. Geração excedente disponível para armazenamento."',
-    img: solarImg,
-    iconBg: style.iconBoxYellow,
-    labelClassName: "text-yellow-400",
-  },
-  {
-    icon: <Battery size={14} className={style.textAccent} />,
-    label: "Armazenamento · agora",
-    body: '"Bateria em 67% (8,0/12 kWh). Taxa de carga ideal. Capacidade suficiente para cobrir o pico noturno sem recorrer à rede."',
-    img: storageImg,
-    iconBg: style.iconBoxAccent,
-    labelClassName: "text-accent",
-  },
-  {
-    icon: <Zap size={14} className="text-blue-400" />,
-    label: "Consumo · agora",
-    body: '"Consumo atual 2,3 kW, 31% abaixo da geração. Pico noturno projetado 4,1 kW entre 19h-22h. Excedente direcionado para bateria."',
-    img: consumptionImg,
-    iconBg: style.iconBoxBlue,
-    labelClassName: "text-blue-400",
-  },
-];
-
 export default function HeroCarousel() {
+  const { t } = useLanguage();
   const [active, setActive] = useState(0);
+
+  const slides = [
+    {
+      icon: <Brain size={14} className={"text-purple-400"} />,
+      label: `${t("hero.carousel.orchestrator.label")} · ${t("hero.carousel.orchestrator.suffix")}`,
+      body: (
+        <>
+          &ldquo;{t("hero.carousel.orchestrator.body.prefix")}
+          <span className="text-primary font-semibold">{t("hero.carousel.orchestrator.body.highlight")}</span>
+          {t("hero.carousel.orchestrator.body.suffix")}&rdquo;
+        </>
+      ),
+      img: orchestratorImg,
+      iconBg: style.iconBoxPurple,
+      labelClassName: "text-purple-400",
+    },
+    {
+      icon: <Sun size={14} className="text-yellow-400" />,
+      label: `${t("hero.carousel.solar.label")} · ${t("hero.carousel.solar.suffix")}`,
+      body: t("hero.carousel.solar.body"),
+      img: solarImg,
+      iconBg: style.iconBoxYellow,
+      labelClassName: "text-yellow-400",
+    },
+    {
+      icon: <Battery size={14} className={style.textAccent} />,
+      label: `${t("hero.carousel.storage.label")} · ${t("hero.carousel.storage.suffix")}`,
+      body: t("hero.carousel.storage.body"),
+      img: storageImg,
+      iconBg: style.iconBoxAccent,
+      labelClassName: "text-accent",
+    },
+    {
+      icon: <Zap size={14} className="text-blue-400" />,
+      label: `${t("hero.carousel.consumption.label")} · ${t("hero.carousel.consumption.suffix")}`,
+      body: t("hero.carousel.consumption.body"),
+      img: consumptionImg,
+      iconBg: style.iconBoxBlue,
+      labelClassName: "text-blue-400",
+    },
+  ];
 
   useEffect(() => {
     const timer = setInterval(() => {
       setActive((prev) => (prev + 1) % slides.length);
     }, 5000);
     return () => clearInterval(timer);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const current = slides[active]!;

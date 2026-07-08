@@ -1,0 +1,121 @@
+{
+  "name": "☀️ Relatório Diário Solaris Potiguar",
+  "nodes": [
+    {
+      "id": "7a3c8e12-1b4f-4e6d-9a8b-3c2d1e5f7a0b",
+      "name": "⏰ Agenda Diária (05:00 UTC)",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [250, 300],
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 5 * * *"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "8b4d9f23-2c5a-4f7e-0b1c-4d3e2f6a8b1c",
+      "name": "📡 Gerar Análises e Enviar E-mails",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [550, 300],
+      "parameters": {
+        "url": "http://backend:3000/api/daily/send_reports",
+        "method": "POST",
+        "authentication": "none",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-API-Key",
+              "value": "={{ $env.DAILY_ANALYSIS_API_KEY }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Accept",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": []
+        },
+        "options": {
+          "timeout": 120000,
+          "allowUnauthorizedCerts": false,
+          "retryOnFail": true,
+          "maxTries": 3,
+          "waitBetweenTries": 5000
+        }
+      }
+    },
+    {
+      "id": "9c5e0a34-3d6b-0a8f-1c2d-5e4f3a7b9c2d",
+      "name": "✅ Log de Sucesso",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [850, 250],
+      "parameters": {}
+    },
+    {
+      "id": "0d6f1b45-4e7c-1b90-2d3e-6f5a4b8c0d3e",
+      "name": "❌ Log de Erro",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [850, 400],
+      "parameters": {}
+    }
+  ],
+  "connections": {
+    "⏰ Agenda Diária (05:00 UTC)": {
+      "main": [
+        [
+          {
+            "node": "📡 Gerar Análises e Enviar E-mails",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "📡 Gerar Análises e Enviar E-mails": {
+      "main": [
+        [
+          {
+            "node": "✅ Log de Sucesso",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "❌ Log de Erro",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "tags": [
+    "solaris-potiguar",
+    "daily",
+    "email"
+  ],
+  "versionId": "1.0.0"
+}

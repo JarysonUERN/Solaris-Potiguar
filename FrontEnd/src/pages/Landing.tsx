@@ -5,12 +5,16 @@ import {
   BarChart2, ArrowRight, Menu, X
 } from "lucide-react";
 import { style } from "../styles/styles.js";
+import { useLanguage } from "../i18n/index.js";
 import ThemeToggle from "../components/ThemeToggle.js";
 import HeroCarousel from "../components/HeroCarousel.js";
 import LandscapeCarousel from "../components/LandscapeCarousel.js";
+import LangSelector from "../components/LangSelector.js";
+import SolarisP from "../assets/images/SolarisP.png";
 
 export default function Landing() {
   const navigate = useNavigate();
+  const { t } = useLanguage();
   const [menuOpen, setMenuOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const heroRef = useRef<HTMLDivElement>(null);
@@ -63,29 +67,33 @@ export default function Landing() {
               bgDark="bg-primary"
               bgLight="bg-blue-900"
             />
-            <span className={style.navLogoText}> Solaris Potiguar</span>
+            <img
+              src={SolarisP}
+              alt="Solaris Potiguar"
+              className="h-8 w-auto object-contain"
+            />
           </div>
-
           <div className={style.navLinks}>
-            <a href="#como-funciona" className={style.linkHover}>Como funciona</a>
-            <a href="#agentes" className={style.linkHover}>Agentes</a>
-            <a href="#beneficios" className={style.linkHover}>Benefícios</a>
+            <a href="#como-funciona" className={style.linkHover}>{t("nav.links.how")}</a>
+            <a href="#agentes" className={style.linkHover}>{t("nav.links.agents")}</a>
+            <a href="#beneficios" className={style.linkHover}>{t("nav.links.benefits")}</a>
           </div>
 
           <div className={style.navActions}>
+            <LangSelector />
             {isLoggedIn ? (
               <>
                 <button
                   onClick={() => navigate("/dashboard")}
                   className={style.btnOutline}
                 >
-                  Ir ao dashboard
+                  {t("nav.auth.dashboard")}
                 </button>
                 <button
                   onClick={handleLogout}
                   className={style.btnPrimarySm}
                 >
-                  Sair
+                  {t("nav.auth.logout")}
                 </button>
               </>
             ) : (
@@ -94,13 +102,13 @@ export default function Landing() {
                   onClick={() => navigate("/login")}
                   className={style.btnOutline}
                 >
-                  Entrar
+                  {t("nav.auth.login")}
                 </button>
                 <button
-                  onClick={() => navigate("/onboarding")}
+                  onClick={() => navigate("/register")}
                   className={style.btnPrimarySm}
                 >
-                  Começar grátis
+                  {t("nav.auth.signup")}
                 </button>
               </>
             )}
@@ -116,21 +124,24 @@ export default function Landing() {
 
         {menuOpen && (
           <div className={style.mobileMenu}>
-            <a href="#como-funciona" className={style.textSm} onClick={() => setMenuOpen(false)}>Como funciona</a>
-            <a href="#agentes" className={style.textSm} onClick={() => setMenuOpen(false)}>Agentes</a>
-            <a href="#beneficios" className={style.textSm} onClick={() => setMenuOpen(false)}>Benefícios</a>
+            <a href="#como-funciona" className={style.textSm} onClick={() => setMenuOpen(false)}>{t("nav.links.how")}</a>
+            <a href="#agentes" className={style.textSm} onClick={() => setMenuOpen(false)}>{t("nav.links.agents")}</a>
+            <a href="#beneficios" className={style.textSm} onClick={() => setMenuOpen(false)}>{t("nav.links.benefits")}</a>
+            <div className="flex justify-center">
+              <LangSelector />
+            </div>
             {isLoggedIn ? (
               <>
                 <button onClick={() => navigate("/dashboard")} className={style.btnPrimaryFull}>
-                  Ir ao dashboard
+                  {t("nav.auth.dashboard")}
                 </button>
                 <button onClick={handleLogout} className={`${style.btnOutline} mt-2`}>
-                  Sair
+                  {t("nav.auth.logout")}
                 </button>
               </>
             ) : (
-              <button onClick={() => navigate("/onboarding")} className={style.btnPrimaryFull}>
-                Começar grátis
+              <button onClick={() => navigate("/register")} className={style.btnPrimaryFull}>
+                {t("nav.auth.signup")}
               </button>
             )}
           </div>
@@ -164,43 +175,43 @@ export default function Landing() {
           <div>
             <div className={style.badge}>
               <Sparkles size={11} />
-              Multi-agentes de IA · Rio Grande do Norte
+              {t("hero.badge")}
             </div>
 
             <h1 className={style.titleHero}>
-              Energia solar gerenciada por{" "}
-              <span className={style.textPrimary}>inteligência</span>, não por dashboards
+              {t("hero.title.prefix")}
+              <span className={style.textPrimary}>{t("hero.title.highlight")}</span>{t("hero.title.suffix")}
             </h1>
 
             <p className={style.textLgMuted}>
-              Três agentes de IA analisam clima, consumo e armazenamento em tempo real. Você recebe uma recomendação direta em linguagem natural — sem gráficos, sem confusão.
+              {t("hero.subtitle")}
             </p>
 
             <div className={style.flexColSmRow + " reveal-on-scroll opacity-0 translate-y-6 [&.revealed]:opacity-100 [&.revealed]:translate-y-0 transition-all duration-700"}>
               <button
-                onClick={() => navigate("/onboarding")}
+                onClick={() => navigate(isLoggedIn ? "/onboarding" : "/register")}
                 className={style.btnAction}
               >
-                Configurar minha propriedade
+                {t("hero.cta.setup")}
                 <ArrowRight size={16} className="group-hover:translate-x-0.5 transition-transform" />
               </button>
               <a
                 href="#como-funciona"
                 className={style.btnOutlineLg}
               >
-                Ver como funciona
+                {t("hero.cta.how")}
               </a>
             </div>
 
             <div className={style.statsRow + " reveal-on-scroll opacity-0 translate-y-6 [&.revealed]:opacity-100 [&.revealed]:translate-y-0 transition-all duration-700 delay-200"}>
               {[
-                { value: "38+", label: "kWh analisados/dia" },
-                { value: "3", label: "agentes ativos" },
-                { value: "R$ 847", label: "economia/mês média" },
+                { value: "38+", labelKey: "hero.stat.kwh" },
+                { value: "3", labelKey: "hero.stat.agents" },
+                { value: "R$ 847", labelKey: "hero.stat.savings" },
               ].map((stat) => (
-                <div key={stat.label}>
+                <div key={stat.labelKey}>
                   <div className={style.textXlMono}>{stat.value}</div>
-                  <div className={style.textXsMutedTop}>{stat.label}</div>
+                  <div className={style.textXsMutedTop}>{t(stat.labelKey)}</div>
                 </div>
               ))}
             </div>
@@ -213,8 +224,8 @@ export default function Landing() {
       <section id="como-funciona" className={style.section + " reveal-on-scroll opacity-0 translate-y-8 [&.revealed]:opacity-100 [&.revealed]:translate-y-0 transition-all duration-700"}>
         <div className={style.container}>
           <div className={style.titleSection}>
-            <div className={style.textMonoTitle}>Processo</div>
-            <h2 className={style.title + " " + style.floatAnimSlow}>Três passos, uma resposta</h2>
+            <div className={style.textMonoTitle}>{t("process.label")}</div>
+            <h2 className={style.title + " " + style.floatAnimSlow}>{t("process.title")}</h2>
           </div>
 
           <div className={style.grid3 + " " + style.staggerGroup}>
@@ -222,20 +233,20 @@ export default function Landing() {
               {
                 step: "01",
                 icon: <MapPin size={20} className={style.textPrimary} />,
-                title: "Configure sua propriedade",
-                desc: "Informe capacidade dos painéis, armazenamento em bateria e padrão de consumo. Feito uma vez, usado para sempre.",
+                titleKey: "process.step1.title",
+                descKey: "process.step1.desc",
               },
               {
                 step: "02",
                 icon: <Network size={20} className={style.textAccent} />,
-                title: "Agentes analisam tudo",
-                desc: "Clima em tempo real via Open-Meteo, consumo histórico e estado da bateria são processados simultaneamente por três IAs.",
+                titleKey: "process.step2.title",
+                descKey: "process.step2.desc",
               },
               {
                 step: "03",
                 icon: <Sparkles size={20} className={style.textYellow} />,
-                title: "Recomendação em linguagem natural",
-                desc: "Nada de gráfico. O orquestrador sintetiza tudo numa frase clara e acionável para você decidir agora.",
+                titleKey: "process.step3.title",
+                descKey: "process.step3.desc",
               },
             ].map((item) => (
               <div key={item.step} className={style.cardRelative + " " + style.glowCardHover + " " + style.glowCardActive}>
@@ -245,8 +256,8 @@ export default function Landing() {
                 <div className={style.iconBox}>
                   {item.icon}
                 </div>
-                <h3 className={style.subtitle}>{item.title}</h3>
-                <p className={style.textSmMutedLeading}>{item.desc}</p>
+                <h3 className={style.subtitle}>{t(item.titleKey)}</h3>
+                <p className={style.textSmMutedLeading}>{t(item.descKey)}</p>
               </div>
             ))}
           </div>
@@ -257,42 +268,42 @@ export default function Landing() {
         <div className={style.container}>
           <div className={style.grid2}>
             <div>
-              <div className={style.textMonoTitle}>Multi-agentes</div>
+              <div className={style.textMonoTitle}>{t("agents.label")}</div>
               <h2 className={style.titleMd}>
-                Três especialistas trabalhando em paralelo
+                {t("agents.title")}
               </h2>
               <p className="text-muted-foreground leading-relaxed mb-8">
-                Cada agente tem uma especialidade distinta. O orquestrador ouve os três e entrega uma recomendação única — transparente e rastreável.
+                {t("agents.desc")}
               </p>
 
               <div className={style.spaceY4 + " " + style.staggerGroup}>
                 {[
                   {
                     icon: <Sun size={16} className={style.textPrimary} />,
-                    name: "Agente Meteorológico",
-                    desc: "Irradiância, temperatura, nuvens e previsão horária via Open-Meteo API",
+                    nameKey: "agents.meteo.name",
+                    descKey: "agents.meteo.desc",
                     color: "bg-primary/10 border-primary/20",
                   },
                   {
                     icon: <Zap size={16} className={style.textBlue} />,
-                    name: "Agente de Consumo",
-                    desc: "Padrão histórico, pico tarifário e demanda projetada para as próximas horas",
+                    nameKey: "agents.consumption.name",
+                    descKey: "agents.consumption.desc",
                     color: "bg-blue-500/10 border-blue-500/20",
                   },
                   {
                     icon: <Battery size={16} className={style.textAccent} />,
-                    name: "Agente de Armazenamento",
-                    desc: "Estado da bateria, taxa de carga/descarga e autonomia disponível",
+                    nameKey: "agents.storage.name",
+                    descKey: "agents.storage.desc",
                     color: "bg-accent/10 border-accent/20",
                   },
                   ].map((agent) => (
-                  <div key={agent.name} className={style.agentCard(agent.color) + " " + style.glowCardHover}>
+                  <div key={agent.nameKey} className={style.agentCard(agent.color) + " " + style.glowCardHover}>
                     <div className={style.iconBoxSm}>
                       {agent.icon}
                     </div>
                     <div>
-                      <div className={style.subtitleCard}>{agent.name}</div>
-                      <div className={style.textXsMutedTop}>{agent.desc}</div>
+                      <div className={style.subtitleCard}>{t(agent.nameKey)}</div>
+                      <div className={style.textXsMutedTop}>{t(agent.descKey)}</div>
                     </div>
                   </div>
                 ))}
@@ -303,7 +314,7 @@ export default function Landing() {
               <div className={style.cardAgent}>
                 <div className={style.analysisHeader}>
                   <Network size={12} />
-                  Raciocínio em tempo real
+                  {t("agents.reasoning")}
                 </div>
                 {[
                   { label: "METEO", color: "text-primary bg-primary/10", text: "Irradiância: 847 W/m² · UV: 9 · Nuvens às 16h" },
@@ -320,7 +331,7 @@ export default function Landing() {
                 ))}
                 <div className={style.recommendationBox}>
                   <p className={style.textSmLeading}>
-                    "Mantenha as cargas ligadas agora. A bateria vai completar a carga antes do pôr do sol e cobrirá toda a noite — <span className="text-primary font-medium">economia de R$ 18,40</span>."
+                    {t("agents.recommendation.prefix")}<span className="text-primary font-medium">{t("agents.recommendation.highlight")}</span>{t("agents.recommendation.suffix")}
                   </p>
                 </div>
               </div>
@@ -333,27 +344,27 @@ export default function Landing() {
       <section id="beneficios" className={style.section + " reveal-on-scroll opacity-0 translate-y-8 [&.revealed]:opacity-100 [&.revealed]:translate-y-0 transition-all duration-700 delay-200"}>
         <div className={style.container}>
           <div className={style.titleSection}>
-            <div className={style.textMonoTitle}>Por que Solaris Potiguar?</div>
+            <div className={style.textMonoTitle}>{t("benefits.label")}</div>
           </div>
           <section className="py-6 px-6">
             <LandscapeCarousel />
           </section>
           <div className={style.titleSection}>
-            <h2 className={style.title}>Feito para o sertão do RN</h2>
+            <h2 className={style.title}>{t("benefits.title")}</h2>
           </div>
           <div className={style.grid4 + " " + style.staggerGroup}>
             {[
-              { icon: <Sun size={18} className={style.textPrimary} />, title: "Clima local", desc: "Dados de irradiância específicos para o semiárido nordestino" },
-              { icon: <Zap size={18} className={style.textAccent} />, title: "Sem gráficos", desc: "Recomendação direta. O que fazer agora, em português claro" },
-              { icon: <Battery size={18} className={style.textBlue} />, title: "Offline-first", desc: "Funciona mesmo com conexão instável no interior" },
-              { icon: <BarChart2 size={18} className={style.textYellow} />, title: "Histórico", desc: "Acompanhe o padrão de decisões e a economia acumulada" },
+              { icon: <Sun size={18} className={style.textPrimary} />, titleKey: "benefits.climate.title", descKey: "benefits.climate.desc" },
+              { icon: <Zap size={18} className={style.textAccent} />, titleKey: "benefits.nographs.title", descKey: "benefits.nographs.desc" },
+              { icon: <Battery size={18} className={style.textBlue} />, titleKey: "benefits.offline.title", descKey: "benefits.offline.desc" },
+              { icon: <BarChart2 size={18} className={style.textYellow} />, titleKey: "benefits.history.title", descKey: "benefits.history.desc" },
             ].map((b) => (
-              <div key={b.title} className={style.cardHover + " " + style.glowCardHover + " " + style.glowCardActive}>
+              <div key={b.titleKey} className={style.cardHover + " " + style.glowCardHover + " " + style.glowCardActive}>
                 <div className={style.iconBoxLg}>
                   {b.icon}
                 </div>
-                <div className={style.subtitleCard}>{b.title}</div>
-                <div className={style.textXsLeading}>{b.desc}</div>
+                <div className={style.subtitleCard}>{t(b.titleKey)}</div>
+                <div className={style.textXsLeading}>{t(b.descKey)}</div>
               </div>
             ))}
           </div>
@@ -365,15 +376,15 @@ export default function Landing() {
           <div className={style.iconBoxPrimaryCircle + " " + style.floatAnim}>
             <Sun size={24} className={style.textPrimary} />
           </div>
-          <h2 className={style.titleSm}>Pronto para gerenciar com inteligência?</h2>
+          <h2 className={style.titleSm}>{t("cta.title")}</h2>
           <p className={style.textLgMutedCenter}>
-            Configure sua propriedade em menos de 2 minutos e receba sua primeira análise hoje.
+            {t("cta.desc")}
           </p>
           <button
-            onClick={() => navigate("/onboarding")}
+            onClick={() => navigate(isLoggedIn ? "/onboarding" : "/register")}
             className={style.btnPrimaryLg}
           >
-            Começar agora, gratuitamente
+            {t("cta.button")}
             <ArrowRight size={16} className="group-hover:translate-x-0.5 transition-transform" />
           </button>
         </div>
@@ -385,12 +396,12 @@ export default function Landing() {
             <div className={style.iconBoxFooter}>
               <Sun size={10} className={style.textPrimary} />
             </div>
-            <span className={style.footerLink}>Solaris Potiguar · Rio Grande do Norte</span>
+            <span className={style.footerLink}>{t("footer.brand")}</span>
           </div>
           <div className={style.footerLinks}>
-            <span className={style.footerLink}>Clima: Open-Meteo API</span>
-            <span className={style.footerLink}>IA: Multi-agent LLM</span>
-            <span className={style.footerLink}>AMD Hackathon MVP 2026</span>
+            <span className={style.footerLink}>{t("footer.climate")}</span>
+            <span className={style.footerLink}>{t("footer.ai")}</span>
+            <span className={style.footerLink}>{t("footer.event")}</span>
           </div>
         </div>
       </footer>

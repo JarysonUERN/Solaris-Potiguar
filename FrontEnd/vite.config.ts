@@ -18,6 +18,12 @@ export default defineConfig({
     },
   },
   assetsInclude: ['**/*.svg', '**/*.csv'],
+  server: {
+    proxy: {
+      '/api': { target: 'http://localhost:3000', changeOrigin: true },
+      '/solaris_potiguar': { target: 'http://localhost:3000', changeOrigin: true },
+    },
+  },
   oxc: {
     include: /\.(m?ts|[jt]sx|mjs)$/,
   },

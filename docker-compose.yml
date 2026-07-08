@@ -28,22 +28,76 @@ services:
       DATABASE_URL: postgres://postgres:postgres@db:5432/back_end_development
       RAILS_MASTER_KEY: ${RAILS_MASTER_KEY}
       FIREWORKS_API_KEY: ${FIREWORKS_API_KEY}
+      DAILY_ANALYSIS_API_KEY: ${DAILY_ANALYSIS_API_KEY}
+      SMTP_ADDRESS: ${SMTP_ADDRESS:-smtp.gmail.com}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_DOMAIN: ${SMTP_DOMAIN:-localhost}
+      SMTP_USERNAME: ${SMTP_USERNAME}
+      SMTP_PASSWORD: ${SMTP_PASSWORD}
+      SMTP_AUTHENTICATION: ${SMTP_AUTHENTICATION:-plain}
+      SMTP_ENABLE_STARTTLS: ${SMTP_ENABLE_STARTTLS:-true}
+      SMTP_OPENSSL_VERIFY: ${SMTP_OPENSSL_VERIFY:-peer}
+      HOST: ${HOST:-localhost}
       PORT: "3000"
+      BINDING: "0.0.0.0"
       RAILS_LOG_LEVEL: info
     volumes:
       - ./BackEnd:/rails
       - bundle:/usr/local/bundle
     stdin_open: true
     tty: true
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/up"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
 
   frontend:
     build:
       context: ./FrontEnd
     depends_on:
-      - backend
+      backend:
+        condition: service_healthy
     ports:
       - "80:80"
+    restart: unless-stopped
+
+  n8n:
+    image: n8nio/n8n:latest
+    container_name: solaris-n8n
+    restart: unless-stopped
+    ports:
+      - "5678:5678"
+    depends_on:
+      backend:
+        condition: service_healthy
+    environment:
+      - N8N_HOST=${N8N_HOST:-localhost}
+      - N8N_PORT=5678
+      - N8N_PROTOCOL=${N8N_PROTOCOL:-http}
+      - N8N_METRICS=false
+      - N8N_SKIP_WEBHOOK_DEREGISTRATION_SHUTDOWN=true
+      - EXECUTIONS_DATA_PRUNE=true
+      - EXECUTIONS_DATA_MAX_AGE=168
+      - DB_TYPE=sqlite
+      - DB_SQLITE_DATABASE=/home/node/.n8n/database.sqlite
+      - DAILY_ANALYSIS_API_KEY=${DAILY_ANALYSIS_API_KEY}
+      - N8N_API_KEY=${N8N_API_KEY}
+      - WEBHOOK_URL=http://localhost:5678/
+      # SMTP for n8n email node
+      - N8N_EMAIL_MODE=smtp
+      - N8N_SMTP_HOST=${SMTP_ADDRESS:-smtp.gmail.com}
+      - N8N_SMTP_PORT=${SMTP_PORT:-587}
+      - N8N_SMTP_USER=${SMTP_USERNAME}
+      - N8N_SMTP_PASS=${SMTP_PASSWORD}
+      - N8N_SMTP_SENDER=${N8N_SMTP_SENDER:-noreply@solarispotiguar.com}
+      - N8N_SMTP_SSL=${N8N_SMTP_SSL:-false}
+    volumes:
+      - n8n_data:/home/node/.n8n
+      - ./n8n/workflows:/import
 
 volumes:
   pgdata:
   bundle:
+  n8n_data:

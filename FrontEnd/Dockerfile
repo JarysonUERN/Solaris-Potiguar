@@ -13,6 +13,10 @@ FROM nginx:alpine
 COPY --from=build /app/dist /usr/share/nginx/html
 
 COPY <<"EOF" /etc/nginx/conf.d/default.conf
+upstream backend {
+    server backend:3000;
+}
+
 server {
     listen 80;
     server_name _;
@@ -20,7 +24,7 @@ server {
     index index.html;
 
     location /api/ {
-        proxy_pass http://backend:3000/api/;
+        proxy_pass http://backend;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
@@ -28,7 +32,7 @@ server {
     }
 
     location /solaris_potiguar/ {
-        proxy_pass http://backend:3000/solaris_potiguar/;
+        proxy_pass http://backend;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
@@ -36,7 +40,7 @@ server {
     }
 
     location /up {
-        proxy_pass http://backend:3000/up;
+        proxy_pass http://backend;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
