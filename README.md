@@ -6,7 +6,7 @@
 
 [![AMD Hackathon 2026](https://img.shields.io/badge/AMD-Hackathon%202026-ED1C24?style=flat-square)](https://www.amd.com)
 [![Status](https://img.shields.io/badge/Status-In_Development-blue?style=flat-square)]()
-[![License](https://img.shields.io/badge/License-MIT-purple?style=flat-square)]()
+[![License](https://img.shields.io/badge/License-GPL-3.0-purple?style=flat-square)]()
 
 </div>   
 
