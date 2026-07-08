@@ -77,12 +77,19 @@ export default function Register() {
 
       const auth = await login(email.trim().toLowerCase(), password);
 
+      const existing = localStorage.getItem("solaris-auth");
+      let property_id: number | null = null;
+      if (existing) {
+        try { property_id = JSON.parse(existing).property_id ?? null; } catch {}
+      }
+
       localStorage.setItem(
         "solaris-auth",
         JSON.stringify({
           token: auth.token,
           email: auth.email,
           full_name: auth.full_name,
+          property_id,
         })
       );
 

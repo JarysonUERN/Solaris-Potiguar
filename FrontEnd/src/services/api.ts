@@ -25,9 +25,10 @@ function authHeaders(): Record<string, string> {
   return headers;
 }
 
-async function request<T>(url: string, options: RequestInit = {}): Promise<T> {
+async function request<T>(url: string, options: RequestInit & { timeout?: number } = {}): Promise<T> {
+  const { timeout = 15000, ...fetchOptions } = options;
   const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), 15000);
+  const timer = setTimeout(() => controller.abort(), timeout);
 
   try {
     const res = await fetch(url, {
@@ -147,6 +148,7 @@ export async function createAnalysis(
   return request<AnalysisResponse>("/api/analysis", {
     method: "POST",
     body: JSON.stringify({ property_id: propertyId }),
+    timeout: 180000,
   });
 }
 

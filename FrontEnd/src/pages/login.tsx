@@ -46,6 +46,7 @@ export default function Login() {
           token: data.token,
           email: data.email,
           full_name: data.full_name,
+          property_id: data.property_id,
         })
       );
 

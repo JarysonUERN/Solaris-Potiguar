@@ -161,6 +161,7 @@ const en: Record<string, string> = {
   "onboarding.equipment.silo": "Silo / dryer",
 
   "dashboard.loading": "Loading...",
+  "dashboard.header.back": "Back to landing page",
   "dashboard.header.home": "Back to landing page",
   "dashboard.sidebar.edit": "Edit information",
   "dashboard.sidebar.cancel": "Cancel",
@@ -173,6 +174,10 @@ const en: Record<string, string> = {
   "dashboard.climate.uv": "UV",
   "dashboard.climate.wind": "Wind",
   "dashboard.climate.humidity": "Humidity",
+  "dashboard.climate.irradiation": "Solar Irradiation",
+  "dashboard.climate.cloud_cover": "Cloud Cover",
+  "dashboard.climate.unavailable": "Climate data unavailable",
+  "dashboard.climate.na": "—",
   "dashboard.analyze": "Analyze now",
   "dashboard.analyzing": "Agents analyzing…",
   "dashboard.analyze.error": "Error generating analysis.",

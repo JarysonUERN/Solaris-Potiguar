@@ -27,10 +27,12 @@ function getStoredPropId(): number | null {
 type ClimateDisplay = {
   temp: number;
   condition: string;
-  uv: number;
-  wind: number;
-  humidity: number;
-  forecast: { hour: string; icon: string; temp: number }[];
+  uv: number | null;
+  wind: number | null;
+  humidity: number | null;
+  irradiation: number;
+  cloud_cover: number;
+  is_real_data: boolean;
 };
 
 function WeatherIcon({ type, size = 20 }: { type: string; size?: number }) {
@@ -40,34 +42,27 @@ function WeatherIcon({ type, size = 20 }: { type: string; size?: number }) {
 }
 
 function buildWeatherDisplay(analysis: AnalysisResponse): ClimateDisplay {
-  const { solar_irradiation, cloud_cover, temperature } = analysis.climate;
-  const classification = analysis.energy.classification;
+  const weather = analysis.weather || analysis.climate!;
+  const irradiation = weather.solar_irradiation;
+  const cloud_cover = weather.cloud_cover;
+  const temperature = weather.temperature_max;
+
+  const is_real_data = irradiation > 0 || cloud_cover > 0 || temperature > 0;
 
   let condition = "Ensolarado";
   if (cloud_cover > 60) condition = "Nublado";
   else if (cloud_cover > 30) condition = "Parcialmente nublado";
-
-  const forecast = [
-    { hour: "Agora", icon: cloud_cover > 60 ? "cloud" : "sun", temp: Math.round(temperature) },
-  ];
-
-  for (let i = 1; i <= 5; i++) {
-    const h = (new Date().getHours() + i) % 24;
-    const icon = i > 3 && cloud_cover > 40 ? "cloud-sun" : "sun";
-    forecast.push({
-      hour: `${h}h`,
-      icon,
-      temp: Math.round(temperature - i * 0.5),
-    });
-  }
+  if (!is_real_data) condition = "Sem dados climáticos";
 
   return {
     temp: Math.round(temperature),
     condition,
-    uv: classification === "EXCEDENTE" ? 9 : classification === "DEFICIT" ? 3 : 6,
-    wind: 12,
-    humidity: Math.round(100 - solar_irradiation * 10),
-    forecast,
+    uv: is_real_data && irradiation > 4 ? Math.round(irradiation * 2) : null,
+    wind: is_real_data ? 12 : null,
+    humidity: is_real_data ? Math.round(Math.max(20, Math.min(95, 100 - irradiation * 8))) : null,
+    irradiation,
+    cloud_cover,
+    is_real_data,
   };
 }
 
@@ -84,8 +79,7 @@ export default function Dashboard() {
   const [editingPassword, setEditingPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
-
-  const propId = getStoredPropId();
+  const [activePropId, setActivePropId] = useState<number | null>(null);
 
   useEffect(() => {
     const token = localStorage.getItem("solaris-auth");
@@ -96,33 +90,45 @@ export default function Dashboard() {
 
     const init = async () => {
       try {
-        console.log("[Dashboard] init start", { propId });
         const userData = await fetchUser();
         console.log("[Dashboard] user fetched", userData);
         setUser(userData);
         setEditingName(userData.full_name);
-        console.log("[Dashboard] after setUser, propId=", propId);
 
-        if (propId) {
-          console.log("[Dashboard] fetching property", propId);
-          const [propRes, climateRes, historyRes] = await Promise.all([
-            fetchProperty(propId),
-            fetchClimate(propId).catch((e) => {
-              console.warn("[Dashboard] climate failed", e);
-              return null;
-            }),
-            fetchAnalysesByProperty(propId).catch((e) => {
-              console.warn("[Dashboard] history failed", e);
-              return [] as AnalysisResponse[];
-            }),
-          ]);
-
-          console.log("[Dashboard] property fetched", propRes);
-          setProperty(propRes.property);
-          setAnalyses(Array.isArray(historyRes) ? historyRes : []);
+        let pid = getStoredPropId();
+        if (pid === null && userData.property_id) {
+          pid = userData.property_id;
+          const raw = localStorage.getItem("solaris-auth");
+          if (raw) {
+            const session = JSON.parse(raw);
+            session.property_id = userData.property_id;
+            localStorage.setItem("solaris-auth", JSON.stringify(session));
+          }
         }
 
-        console.log("[Dashboard] about to finally");
+        if (pid === null) {
+          navigate("/onboarding", { replace: true });
+          return;
+        }
+
+        setActivePropId(pid);
+
+        console.log("[Dashboard] fetching property", pid);
+        const [propRes, climateRes, historyRes] = await Promise.all([
+          fetchProperty(pid),
+          fetchClimate(pid).catch((e) => {
+            console.warn("[Dashboard] climate failed", e);
+            return null;
+          }),
+          fetchAnalysesByProperty(pid).catch((e) => {
+            console.warn("[Dashboard] history failed", e);
+            return [] as AnalysisResponse[];
+          }),
+        ]);
+
+        console.log("[Dashboard] property fetched", propRes);
+        setProperty(propRes.property);
+        setAnalyses(Array.isArray(historyRes) ? historyRes : []);
       } catch (err) {
         console.error("[Dashboard] init error", err);
         localStorage.removeItem("solaris-auth");
@@ -130,12 +136,11 @@ export default function Dashboard() {
       } finally {
         console.log("[Dashboard] finally running");
         setLoading(false);
-        console.log("[Dashboard] setLoading(false) done");
       }
     };
 
     init();
-  }, [navigate, propId]);
+  }, [navigate]);
 
   const config: PropertyConfig = property
     ? {
@@ -158,12 +163,12 @@ export default function Dashboard() {
       };
 
   const handleAnalyze = async () => {
-    if (!propId) return;
+    if (!activePropId) return;
     setAnalyzing(true);
     setError("");
 
     try {
-      const analysis = await createAnalysis(propId);
+      const analysis = await createAnalysis(activePropId);
       setAnalyses([analysis, ...analyses]);
     } catch (err) {
       setError(err instanceof Error ? err.message : t("dashboard.analyze.error"));
@@ -310,7 +315,9 @@ export default function Dashboard() {
                     <CloudSun size={12} className={style.textPrimary} />
                     {t("dashboard.climate.now")} · {config.city.toUpperCase()}
                   </div>
-                  <div className={style.forecastTime}>Open-Meteo API</div>
+                  <div className={style.forecastTime}>
+                    {activeClimate.is_real_data ? "Open-Meteo API" : t("dashboard.climate.unavailable")}
+                  </div>
                 </div>
 
                 <div className="flex items-center gap-4 mb-5">
@@ -321,30 +328,44 @@ export default function Dashboard() {
                   </div>
                   <div className={style.gridStats}>
                     <div className={style.textXs}>{t("dashboard.climate.uv")}</div>
-                    <div className={style.textMonoFg}>{activeClimate.uv}</div>
+                    <div className={style.textMonoFg}>
+                      {activeClimate.uv !== null ? activeClimate.uv : t("dashboard.climate.na")}
+                    </div>
                     <div className={style.textXs}>{t("dashboard.climate.wind")}</div>
-                    <div className={style.textMonoFg}>{activeClimate.wind} km/h</div>
+                    <div className={style.textMonoFg}>
+                      {activeClimate.wind !== null ? `${activeClimate.wind} km/h` : t("dashboard.climate.na")}
+                    </div>
                     <div className={style.textXs}>{t("dashboard.climate.humidity")}</div>
-                    <div className={style.textMonoFg}>{activeClimate.humidity}%</div>
+                    <div className={style.textMonoFg}>
+                      {activeClimate.humidity !== null ? `${activeClimate.humidity}%` : t("dashboard.climate.na")}
+                    </div>
                   </div>
                 </div>
 
                 <div className={style.gridCols6}>
-                  {activeClimate.forecast.map((f) => (
-                    <div key={f.hour} className={style.flexCol}>
-                      <div className={style.forecastTime}>{f.hour}</div>
-                      <WeatherIcon type={f.icon} size={16} />
-                      <div className={style.textMonoFg}>{f.temp}°</div>
+                  {[
+                    { label: t("dashboard.climate.irradiation"), value: `${activeClimate.irradiation.toFixed(1)} kWh/m²` },
+                    { label: t("dashboard.climate.cloud_cover"), value: `${activeClimate.cloud_cover.toFixed(0)}%` },
+                  ].map((stat) => (
+                    <div key={stat.label} className="p-2 rounded-lg border border-border bg-card/50 text-center col-span-3">
+                      <div className="text-[10px] text-muted-foreground font-mono uppercase tracking-wider">{stat.label}</div>
+                      <div className="text-sm font-bold font-mono text-foreground mt-0.5">{stat.value}</div>
                     </div>
                   ))}
                 </div>
               </div>
             )}
 
+            {error && !showEditForm ? (
+              <div className="rounded-lg border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-400">
+                {error}
+              </div>
+            ) : null}
+
             <button
               onClick={handleAnalyze}
-              disabled={analyzing || !propId}
-              className={`${style.btnAnalyze} ${analyzing || !propId ? style.btnAnalyzeDisabled : style.btnAnalyzeActive
+              disabled={analyzing || !activePropId}
+              className={`${style.btnAnalyze} ${analyzing || !activePropId ? style.btnAnalyzeDisabled : style.btnAnalyzeActive
                 }`}
             >
               {analyzing ? (
@@ -368,11 +389,11 @@ export default function Dashboard() {
                 <div className={`${style.flexBetween} mb-3`}>
                   <div className={style.resultHeader}>
                     <Brain size={12} />
-                    {t("dashboard.recommendation")} · {new Date(latestAnalysis.date).toLocaleString("pt-BR")}
+                    {t("dashboard.recommendation")} · {new Date(latestAnalysis.analysis_date || latestAnalysis.date!).toLocaleString("pt-BR")}
                   </div>
                   <ChevronRight size={16} className={style.chevronIcon} />
                 </div>
-                <p className="text-foreground leading-relaxed">{latestAnalysis.insights.executive_summary}</p>
+                <p className="text-foreground leading-relaxed">{latestAnalysis.recommendation?.summary || latestAnalysis.insights?.executive_summary}</p>
                 <div className={`mt-3 ${style.analysisCard}`}>
                   <Layers size={11} />
                   {t("dashboard.reasoning")}
@@ -394,8 +415,8 @@ export default function Dashboard() {
                       className={style.cardHistory}
                     >
                       <div>
-                        <div className={style.textResultMuted}>{new Date(a.date).toLocaleString("pt-BR")}</div>
-                        <div className={style.textResultFg}>{a.insights.executive_summary.slice(0, 80)}...</div>
+                        <div className={style.textResultMuted}>{new Date(a.analysis_date || a.date!).toLocaleString("pt-BR")}</div>
+                        <div className={style.textResultFg}>{(a.recommendation?.summary || a.insights?.executive_summary || "").slice(0, 80)}...</div>
                       </div>
                       <ChevronRight size={14} className={style.btnBack} />
                     </button>

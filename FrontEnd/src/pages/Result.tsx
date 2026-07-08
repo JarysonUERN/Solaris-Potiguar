@@ -19,9 +19,19 @@ export default function Result() {
     return null;
   }
 
-  const genInsight = analysis.raw_data?.insights?.generation || "";
-  const consInsight = analysis.raw_data?.insights?.consumption || "";
-  const storInsight = analysis.raw_data?.insights?.storage || "";
+  const agentWeather = analysis.agents?.weather;
+  const agentConsumption = analysis.agents?.consumption;
+  const agentStorage = analysis.agents?.storage;
+  const recommendation = analysis.recommendation;
+
+  const analysisDate = analysis.analysis_date || analysis.date || "";
+  const genSummary = agentWeather?.summary || analysis.raw_data?.insights?.generation || "";
+  const consSummary = agentConsumption?.consumption_profile
+    ? `${agentConsumption.consumption_profile} · ${agentConsumption.recommended_operation_window}`
+    : analysis.raw_data?.insights?.consumption || "";
+  const storSummary = agentStorage?.battery_available !== undefined
+    ? (agentStorage.battery_available ? `Battery ${agentStorage.battery_strategy} (${agentStorage.battery_capacity} kWh)` : "No battery")
+    : analysis.raw_data?.insights?.storage || "";
 
   return (
     <div className={style.page}>
@@ -40,7 +50,7 @@ export default function Result() {
             className="h-8 w-auto object-contain"
           />
           <div className={style.divider} />
-          <div className={style.textMonoXs}>{new Date(analysis.date).toLocaleString("pt-BR")}</div>
+          <div className={style.textMonoXs}>{new Date(analysisDate).toLocaleString("pt-BR")}</div>
           <div className="ml-auto">
             <LangSelector />
           </div>
@@ -53,15 +63,20 @@ export default function Result() {
             <Brain size={12} />
             {t("result.orchestrator")}
           </div>
-          <p className={style.textLgForeground}>{analysis.insights.executive_summary}</p>
-          {analysis.insights.recommendations ? (
+          <p className={style.textLgForeground}>{recommendation?.summary || analysis.insights?.executive_summary}</p>
+          {recommendation?.recommendation ? (
             <div className="mt-3 space-y-1">
-              {analysis.insights.recommendations.split("\n").filter(Boolean).map((r, i) => (
+              {recommendation.recommendation.split("\n").filter(Boolean).map((r, i) => (
                 <p key={i} className="text-sm text-muted-foreground flex items-start gap-2">
                   <span className="text-primary mt-0.5">•</span>
                   {r}
                 </p>
               ))}
+            </div>
+          ) : null}
+          {recommendation?.expected_benefit ? (
+            <div className="mt-2 text-xs text-muted-foreground italic">
+              {recommendation.expected_benefit}
             </div>
           ) : null}
         </div>
@@ -80,7 +95,9 @@ export default function Result() {
             badgeColor: "bg-primary/15 text-primary border-primary/25",
             borderColor: "border-primary/15",
             fallbackKey: "result.agent.meteo.fallback",
-            text: genInsight,
+            text: genSummary,
+            reasoning: agentWeather?.reasoning,
+            extra: agentWeather ? `${agentWeather.solar_conditions} · risk: ${agentWeather.weather_risk}` : "",
           },
           {
             key: "consumption",
@@ -90,7 +107,9 @@ export default function Result() {
             badgeColor: "bg-blue-500/15 text-blue-400 border-blue-500/25",
             borderColor: "border-blue-500/15",
             fallbackKey: "result.agent.consumption.fallback",
-            text: consInsight,
+            text: consSummary,
+            reasoning: agentConsumption?.reasoning,
+            extra: agentConsumption ? `${agentConsumption.flexibility} · window: ${agentConsumption.recommended_operation_window}` : "",
           },
           {
             key: "storage",
@@ -100,7 +119,9 @@ export default function Result() {
             badgeColor: "bg-accent/15 text-accent border-accent/25",
             borderColor: "border-accent/15",
             fallbackKey: "result.agent.storage.fallback",
-            text: storInsight,
+            text: storSummary,
+            reasoning: agentStorage?.reasoning,
+            extra: agentStorage?.battery_available ? `${agentStorage.battery_strategy} · ${agentStorage.battery_capacity} kWh` : "",
           },
         ].map((agent) => (
           <div key={agent.key} className={style.cardAgentResult(agent.borderColor)}>
@@ -118,6 +139,21 @@ export default function Result() {
             <p className={style.textSmMutedLeading5}>
               {agent.text || t(agent.fallbackKey)}
             </p>
+            {agent.reasoning && agent.reasoning.length > 0 && (
+              <div className="mt-2 space-y-0.5">
+                {agent.reasoning.map((r, i) => (
+                  <p key={i} className="text-xs text-muted-foreground flex items-start gap-1.5">
+                    <span className="text-primary/60 mt-0.5">—</span>
+                    {r}
+                  </p>
+                ))}
+              </div>
+            )}
+            {agent.extra ? (
+              <div className="mt-1.5 text-[10px] font-mono text-muted-foreground/60 uppercase tracking-wider">
+                {agent.extra}
+              </div>
+            ) : null}
           </div>
         ))}
 

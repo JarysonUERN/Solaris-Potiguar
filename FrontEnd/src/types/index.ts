@@ -45,12 +45,14 @@ export interface User {
   phone: string | null;
   has_whatsapp: boolean;
   cpf: string | null;
+  property_id: number | null;
 }
 
 export interface AuthResponse {
   token: string;
   email: string;
   full_name: string;
+  property_id: number | null;
 }
 
 export interface Property {
@@ -78,30 +80,88 @@ export interface ClimateData {
   temperature: number;
 }
 
+export interface WeatherData {
+  date: string;
+  temperature_max: number;
+  temperature_min: number;
+  cloud_cover: number;
+  precipitation_probability: number;
+  solar_irradiance: string;
+  solar_irradiation: number;
+}
+
+export interface AgentWeatherResponse {
+  summary: string;
+  solar_conditions: string;
+  weather_risk: string;
+  confidence: number;
+  reasoning: string[];
+}
+
+export interface AgentConsumptionResponse {
+  consumption_profile: string;
+  flexibility: string;
+  recommended_operation_window: string;
+  reasoning: string[];
+  confidence: number;
+}
+
+export interface AgentStorageResponse {
+  battery_available: boolean;
+  battery_capacity: number;
+  battery_strategy: string;
+  reasoning: string[];
+  confidence: number;
+}
+
+export interface Recommendation {
+  summary: string;
+  recommendation: string;
+  priority: string;
+  confidence: number;
+  expected_benefit?: string;
+}
+
 export interface AnalysisResponse {
   id: number;
   property_id: number;
-  date: string;
-  climate: ClimateData;
+  analysis_date: string;
+  created_at: string;
+  updated_at: string;
+  weather: WeatherData;
+  generation: {
+    estimated_generation_kwh: number;
+    estimated_peak_period: string;
+  };
   energy: {
     generation_kwh: number;
     consumption_kwh: number;
     balance_kwh: number;
-    classification: string;
   };
   battery: {
     charge_kwh: number;
     status: string;
-  };
-  insights: {
-    executive_summary: string;
-    recommendations: string;
   };
   savings: {
     kwh: number;
     currency: number;
     currency_unit: string;
   };
+  agents: {
+    weather: AgentWeatherResponse;
+    consumption: AgentConsumptionResponse;
+    storage: AgentStorageResponse;
+  };
+  recommendation: Recommendation;
+
+  /** @deprecated Use `weather` instead */
+  climate?: ClimateData;
+  /** @deprecated Use `recommendation` instead */
+  insights?: {
+    executive_summary: string;
+    recommendations: string;
+  };
+  /** @deprecated Use `agents` instead */
   raw_data?: {
     insights: {
       generation: string;
@@ -109,8 +169,8 @@ export interface AnalysisResponse {
       storage: string;
     };
   };
-  created_at: string;
-  updated_at: string;
+  /** @deprecated Use `analysis_date` instead */
+  date?: string;
 }
 
 export interface ClimateFetchResponse {
