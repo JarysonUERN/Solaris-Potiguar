@@ -5,10 +5,12 @@ module SolarisPotiguar
 
       if user&.authenticate(params[:password])
         token = JwtService.encode(user_id: user.id)
+        property = user.properties.first
         render json: {
           token: token,
           email: user.email,
-          full_name: user.full_name
+          full_name: user.full_name,
+          property_id: property&.id
         }
       else
         render json: { error: "Email ou senha inválidos" }, status: :unauthorized
