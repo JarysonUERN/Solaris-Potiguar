@@ -1,0 +1,27 @@
+pt-BR:
+  date:
+    formats:
+      default: "%d/%m/%Y"
+      long: "%d de %B de %Y"
+      short: "%d/%m"
+  time:
+    formats:
+      default: "%d/%m/%Y %H:%M"
+      long: "%d de %B de %Y %H:%M"
+      short: "%d/%m %H:%M"
+  number:
+    currency:
+      format:
+        unit: "R$"
+        precision: 2
+        separator: ","
+        delimiter: "."
+        format: "%u %n"
+    percentage:
+      format:
+        delimiter: ""
+  support:
+    array:
+      words_connector: ", "
+      two_words_connector: " e "
+      last_word_connector: " e "

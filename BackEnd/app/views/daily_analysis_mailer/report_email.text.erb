@@ -1,0 +1,33 @@
+☀️ RELATÓRIO DIÁRIO SOLARIS POTIGUAR
+<%= @date %>
+
+Olá <%= @user.full_name %>,
+
+Aqui está o resumo de hoje com as condições e recomendações para suas propriedades.
+
+<% @analyses.each do |entry| %>
+  <% property = entry[:property] %>
+  <% analysis = entry[:analysis] %>
+  ---
+  🌿 <%= property.farm_name %> - <%= property.city %>
+  Classificação: <%= classification_label(analysis) %>
+
+  Geração:   <%= number_with_precision(analysis.estimated_generation_kwh, precision: 1) %> kWh
+  Consumo:   <%= number_with_precision(analysis.estimated_consumption_kwh, precision: 1) %> kWh
+  Saldo:     <%= number_with_precision(analysis.balance_kwh, precision: 1) %> kWh
+  Economia:  <%= number_to_currency(analysis.estimated_savings_currency, unit: "R$", precision: 2) %>
+
+  <% if analysis.executive_summary.present? %>
+  💡 <%= analysis.executive_summary %>
+  <% end %>
+
+  <% if analysis.recommendations.present? %>
+  📋 Recomendação: <%= analysis.recommendations %>
+  <% end %>
+<% end %>
+
+Acesse o dashboard para mais detalhes: http://localhost/dashboard
+
+---
+Este é um relatório automático gerado pelo Solaris Potiguar.
+Solaris Potiguar — Energia inteligente para o Nordeste 🌞

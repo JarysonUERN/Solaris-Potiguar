@@ -25,5 +25,7 @@ Rails.application.routes.draw do
         get "property/:property_id", to: "analysis#index", as: :by_property
       end
     end
+
+    post "daily/send_reports", to: "daily_analysis#send_reports"
   end
 end

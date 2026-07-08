@@ -41,6 +41,22 @@ Rails.application.configure do
 
   config.action_mailer.perform_caching = false
 
+  # SMTP via env vars (same config as production for testing)
+  if ENV["SMTP_USERNAME"].present?
+    config.action_mailer.delivery_method = :smtp
+    config.action_mailer.smtp_settings = {
+      address:              ENV.fetch("SMTP_ADDRESS", "smtp.gmail.com"),
+      port:                 ENV.fetch("SMTP_PORT", 587).to_i,
+      domain:               ENV.fetch("SMTP_DOMAIN", "localhost"),
+      user_name:            ENV.fetch("SMTP_USERNAME", ""),
+      password:             ENV.fetch("SMTP_PASSWORD", ""),
+      authentication:       ENV.fetch("SMTP_AUTHENTICATION", "plain"),
+      enable_starttls_auto: ENV.fetch("SMTP_ENABLE_STARTTLS", "true") == "true",
+      openssl_verify_mode:  ENV.fetch("SMTP_OPENSSL_VERIFY", "peer")
+    }
+  end
+  config.action_mailer.default_url_options = { host: ENV.fetch("HOST", "localhost"), port: ENV.fetch("PORT", 3000) }
+
   # Print deprecation notices to the Rails logger.
   config.active_support.deprecation = :log
 
