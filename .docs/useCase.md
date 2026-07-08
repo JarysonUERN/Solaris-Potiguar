@@ -183,20 +183,34 @@ This document describes the primary user interactions with Solaris Potiguar.
 
 ---
 
-# UC-10 — Receive Daily Recommendation (Future)
+# UC-10 — Receive Daily Recommendation ✅
 
 | Field | Description |
 |--------|-------------|
-| **Primary Actor** | System |
+| **Primary Actor** | System (n8n + Rails) |
 | **Goal** | Notify users proactively about optimization opportunities. |
-| **Preconditions** | Scheduled analysis enabled. |
-| **Postconditions** | Recommendation delivered via communication channel. |
+| **Preconditions** | SMTP configured, `DAILY_ANALYSIS_API_KEY` set, n8n workflow active. |
+| **Postconditions** | Recommendation delivered via email. |
 
 ## Main Flow
 
-1. Scheduler starts the analysis.
-2. AI agents generate a recommendation.
-3. System sends the recommendation by email or WhatsApp.
+1. **n8n Schedule Trigger** fires at 05:00 UTC.
+2. n8n sends `POST /api/daily/send_reports` with `X-API-Key`.
+3. Rails iterates all users and properties:
+   - Retrieves weather data from Open-Meteo
+   - Calculates energy generation, consumption, balance
+   - Runs 4 AI agents (Weather, Consumption, Storage, Orchestrator)
+   - Persists each analysis to the database
+4. Rails sends a summary email via **DailyAnalysisMailer** to each user.
+5. Rails returns a JSON summary to n8n.
+6. n8n logs success (or triggers error flow on failure).
+
+## Alternative Flows
+
+- **Weather API unavailable**: analysis skipped for that property, logged as error.
+- **AI service unavailable**: analysis skipped, logged as error.
+- **Property missing coordinates**: skipped, logged as error.
+- **n8n retry**: up to 3 retries with 5s interval on HTTP failure.
 
 ---
 
@@ -219,7 +233,8 @@ Visitor
  │      │  View Analysis Details
  │      │
  │      ├── Update Profile
- │      └── Update Property
+ │      ├── Update Property
+ │      └── Receive Daily Recommendation (n8n → sistema)
  │
  └── Login
         │
