@@ -286,7 +286,7 @@ Running a 120B parameter model at this scale through AMD-accelerated infrastruct
 
 # Elevator Pitch
 
-> Every day, thousands of small rural producers in Northeast Brazil make energy decisions manually. Solaris Potiguar brings AI-powered decision support to these producers by combining weather forecasts, operational context, and multi-agent reasoning accelerated by AMD infrastructure. Instead of expensive enterprise software, Solaris delivers simple recommendations that help producers make better use of their own solar energy.
+> Every day, thousands of small rural producers across Northeast Brazil make critical energy decisions manually — when to irrigate, when to run equipment, when to rely on the grid — based on experience alone, not data. In one of the world's highest solar irradiation regions, where photovoltaic systems are rapidly expanding, most small producers still can't access the intelligent tools that large power plants take for granted. Solaris Potiguar changes that. By combining real-time weather forecasts, operational context, and a multi-agent AI pipeline accelerated by AMD infrastructure, Solaris delivers what used to require enterprise software — in plain language, for the producer working in the field. Not another dashboard. Not another technical report. Just a clear answer to the question every producer asks every morning: what's the smartest thing I can do with my energy today?
 
 ---
 
@@ -430,5 +430,10 @@ docker compose exec n8n n8n list:workflows
 ```
 
 ---
+## Team
+
+**Jaryson Gomes** — Solo Founder and Developer
+[LinkedIn](https://linkedin.com/in/jaryson-gomes) ·
+Mossoró, Rio Grande do Norte, Brazil
 
 ## Developed for the **AMD Hackathon 2026 – Unicorn Track**.
