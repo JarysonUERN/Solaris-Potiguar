@@ -44,6 +44,7 @@ services:
     volumes:
       - ./BackEnd:/rails
       - bundle:/usr/local/bundle
+      - bootsnap_cache:/rails/tmp/cache
     stdin_open: true
     tty: true
     healthcheck:
@@ -100,4 +101,5 @@ services:
 volumes:
   pgdata:
   bundle:
+  bootsnap_cache:
   n8n_data:

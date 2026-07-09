@@ -5,7 +5,15 @@ rm -f /rails/tmp/pids/server.pid
 
 # If running the rails server then create or migrate existing database
 if [ "${1}" == "./bin/rails" ] && [ "${2}" == "server" ]; then
-  ./bin/rails db:prepare
+  # Precompile bootsnap cache if missing (bind mount hides build-time cache)
+  if [ ! -f /rails/tmp/cache/bootsnap/compile-info.yml ]; then
+    echo "Precompiling bootsnap cache..."
+    bundle exec bootsnap precompile app/ lib/
+  fi
+
+  # Faster: try db:migrate first (fast if no pending migrations).
+  # If DB doesn't exist yet, fall back to db:prepare (creates + migrates).
+  ./bin/rails db:migrate 2>/dev/null || ./bin/rails db:prepare
 fi
 
 exec "${@}"
