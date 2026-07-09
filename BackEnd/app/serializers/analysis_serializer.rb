@@ -70,7 +70,7 @@ class AnalysisSerializer
   def build_weather_from_raw(raw)
     climate = raw.dig("climate") || raw.dig(:climate) || {}
     temp = climate.dig("temperature_max") || climate.dig(:temperature_max) || climate.dig("temperature") || climate.dig(:temperature) || @analysis.temperature&.to_f
-    {
+    base = {
       date: @analysis.analysis_date.iso8601,
       temperature_max: temp,
       temperature_min: climate.dig("temperature_min") || climate.dig(:temperature_min) || temp,
@@ -79,6 +79,13 @@ class AnalysisSerializer
       solar_irradiance: climate.dig("solar_irradiance") || climate.dig(:solar_irradiance) || "MEDIUM",
       solar_irradiation: climate.dig("solar_irradiation") || climate.dig(:solar_irradiation) || @analysis.solar_irradiation&.to_f
     }
+
+    %i[wind_speed wind_direction humidity precipitation rain showers snowfall uv_index].each do |key|
+      str_key = key.to_s
+      base[key] = climate.dig(str_key) || climate.dig(key) if climate.key?(str_key) || climate.key?(key)
+    end
+
+    base
   end
 
   def extract_legacy_insights(raw, agent_data)
