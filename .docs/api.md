@@ -114,10 +114,15 @@ Requires `Authorization: Bearer <token>`.
 ### POST /api/analysis
 
 ```json
-{ "property_id": 1 }
+{ "property_id": 1, "lang": "pt" }
 ```
 
-Executa análise completa (clima + energia + 4 agentes AI). Retorna o resultado completo da análise.
+| Parâmetro | Tipo | Padrão | Descrição |
+|---|---|---|---|
+| property_id | integer | — | ID da propriedade |
+| lang | string | "pt" | Idioma dos agentes: `"pt"` (português) ou `"en"` (inglês) |
+
+Executa análise completa (clima + energia + 5 agentes AI). Retorna o resultado completo da análise.
 
 ### GET /api/analysis/:id
 
@@ -209,4 +214,75 @@ Content-Type: application/json
 | estimated_savings_kwh | decimal(10,3) | Economia em kWh |
 | estimated_savings_currency | decimal(12,2) | Economia em R$ |
 | currency | string | "BRL" |
-| raw_data | jsonb | Dados completos dos agentes |
+| raw_data | jsonb | Dados completos dos agentes + simplificação |
+
+---
+
+### Exemplo de Resposta — POST /api/analysis
+
+```json
+{
+  "id": 42,
+  "property_id": 1,
+  "analysis_date": "2026-07-09T10:00:00-03:00",
+  "weather": {
+    "date": "2026-07-09",
+    "temperature_max": 34.5,
+    "temperature_min": 22.0,
+    "cloud_cover": 15.0,
+    "precipitation_probability": 5.0,
+    "solar_irradiance": "HIGH",
+    "solar_irradiation": 6.2
+  },
+  "generation": {
+    "estimated_generation_kwh": 48.3,
+    "estimated_peak_period": "10:00 - 14:00"
+  },
+  "energy": {
+    "generation_kwh": 48.3,
+    "consumption_kwh": 40.0,
+    "balance_kwh": 8.3
+  },
+  "battery": {
+    "charge_kwh": 8.3,
+    "status": "charging"
+  },
+  "savings": {
+    "kwh": 8.3,
+    "currency": 6.64,
+    "currency_unit": "BRL"
+  },
+  "agents": {
+    "weather": {
+      "summary": "Favorable solar conditions expected.",
+      "solar_conditions": "HIGH",
+      "weather_risk": "LOW",
+      "confidence": 0.92,
+      "reasoning": ["Low cloud cover (15%)", "Low probability of rain (5%)"]
+    },
+    "consumption": {
+      "consumption_profile": "IRRIGATION",
+      "flexibility": "MEDIUM",
+      "recommended_operation_window": "10:00 - 14:00",
+      "reasoning": ["Irrigation schedule can be adjusted"],
+      "confidence": 0.82
+    },
+    "storage": {
+      "battery_available": true,
+      "battery_capacity": 12.0,
+      "battery_strategy": "CHARGE",
+      "reasoning": ["Battery exists (12.0 kWh)"],
+      "confidence": 0.81
+    }
+  },
+  "recommendation": {
+    "summary": "Sítio Esperança: HIGH solar conditions.",
+    "recommendation": "Schedule irrigation between 10:00 - 14:00.",
+    "priority": "HIGH",
+    "confidence": 0.85
+  },
+  "simplified": {
+    "simplified_text": "O sol vai estar forte hoje. Use as bombas de irrigação entre 10h e 14h, que é quando seus painéis solares vão produzir mais energia."
+  }
+}
+```
