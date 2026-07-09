@@ -126,7 +126,15 @@ module Api
           cloud_cover: climate[:cloud_cover],
           precipitation_probability: climate[:precipitation_probability],
           solar_irradiance: climate[:solar_irradiance],
-          solar_irradiation: climate[:solar_irradiation]
+          solar_irradiation: climate[:solar_irradiation],
+          wind_speed: climate[:wind_speed],
+          wind_direction: climate[:wind_direction],
+          humidity: climate[:humidity],
+          precipitation: climate[:precipitation],
+          rain: climate[:rain],
+          showers: climate[:showers],
+          snowfall: climate[:snowfall],
+          uv_index: climate[:uv_index]
         },
         generation: {
           estimated_generation_kwh: energy[:generation_kwh],
