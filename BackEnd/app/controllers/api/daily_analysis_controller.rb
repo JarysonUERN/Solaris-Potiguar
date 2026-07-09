@@ -53,6 +53,8 @@ module Api
     end
 
     def build_and_save_analysis(property)
+      lang = "pt"
+
       climate = ClimateService.new(property.latitude, property.longitude).fetch
       energy = EnergyCalculatorService.new(property, climate).calculate
       classification = EnergyClassifierService.new(
@@ -64,21 +66,33 @@ module Api
 
       shared_context = build_shared_context(property, climate, energy)
 
-      weather_insight     = WeatherAgentService.new(shared_context[:weather]).call
+      weather_insight     = WeatherAgentService.new(shared_context[:weather].merge(lang: lang)).call
       consumption_insight = ConsumptionAgentService.new(
         property: shared_context[:property],
-        generation: { estimated_peak_period: shared_context[:generation][:estimated_peak_period] }
+        generation: { estimated_peak_period: shared_context[:generation][:estimated_peak_period] },
+        lang: lang
       ).call
       storage_insight = StorageAgentService.new(
         battery_capacity_kwh: property.battery_capacity_kwh,
-        estimated_generation_kwh: energy[:generation_kwh]
+        estimated_generation_kwh: energy[:generation_kwh],
+        lang: lang
       ).call
 
       orchestrator_result = OrchestratorAgentService.new(
         weather_agent: weather_insight,
         consumption_agent: consumption_insight,
         storage_agent: storage_insight,
-        original_context: shared_context
+        original_context: shared_context,
+        lang: lang
+      ).call
+
+      simplification_result = SimplificationAgentService.new(
+        executive_summary: orchestrator_result[:executive_summary],
+        recommendation: orchestrator_result[:recommendation],
+        expected_benefit: orchestrator_result[:expected_benefit],
+        priority: orchestrator_result[:priority],
+        confidence: orchestrator_result[:confidence],
+        lang: lang
       ).call
 
       Analysis.create!(
@@ -107,7 +121,8 @@ module Api
             consumption: consumption_insight,
             storage: storage_insight
           },
-          orchestrator: orchestrator_result
+          orchestrator: orchestrator_result,
+          simplified: simplification_result
         }
       )
     end

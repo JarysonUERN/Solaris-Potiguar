@@ -4,6 +4,9 @@ class OrchestratorAgentService < BaseAgentService
   end
 
   def system_prompt
+    lang = @context[:lang] || "pt"
+    lang_instruction = lang == "en" ? "Output in English." : "Output in Brazilian Portuguese (pt-BR)."
+
     <<~PROMPT
       You are the Solaris Potiguar Orchestrator.
 
@@ -13,7 +16,9 @@ class OrchestratorAgentService < BaseAgentService
 
       Your job is to combine specialist opinions.
 
-      Produce one practical recommendation in Brazilian Portuguese.
+      Produce one practical recommendation.
+
+      #{lang_instruction}
 
       Return ONLY valid JSON using this exact schema:
       {
