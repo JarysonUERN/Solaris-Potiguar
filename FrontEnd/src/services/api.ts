@@ -143,11 +143,12 @@ export async function fetchClimate(
 }
 
 export async function createAnalysis(
-  propertyId: number
+  propertyId: number,
+  lang?: string
 ): Promise<AnalysisResponse> {
   return request<AnalysisResponse>("/api/analysis", {
     method: "POST",
-    body: JSON.stringify({ property_id: propertyId }),
+    body: JSON.stringify({ property_id: propertyId, lang }),
     timeout: 180000,
   });
 }

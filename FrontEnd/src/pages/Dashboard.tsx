@@ -68,7 +68,7 @@ function buildWeatherDisplay(analysis: AnalysisResponse): ClimateDisplay {
 
 export default function Dashboard() {
   const navigate = useNavigate();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
 
   const [analyses, setAnalyses] = useState<AnalysisResponse[]>([]);
   const [analyzing, setAnalyzing] = useState(false);
@@ -168,7 +168,7 @@ export default function Dashboard() {
     setError("");
 
     try {
-      const analysis = await createAnalysis(activePropId);
+      const analysis = await createAnalysis(activePropId, language);
       setAnalyses([analysis, ...analyses]);
     } catch (err) {
       setError(err instanceof Error ? err.message : t("dashboard.analyze.error"));

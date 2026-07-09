@@ -122,6 +122,10 @@ export interface Recommendation {
   expected_benefit?: string;
 }
 
+export interface SimplifiedResponse {
+  simplified_text: string;
+}
+
 export interface AnalysisResponse {
   id: number;
   property_id: number;
@@ -153,6 +157,8 @@ export interface AnalysisResponse {
     storage: AgentStorageResponse;
   };
   recommendation: Recommendation;
+
+  simplified?: SimplifiedResponse;
 
   /** @deprecated Use `weather` instead */
   climate?: ClimateData;

@@ -207,6 +207,7 @@ const pt: Record<string, string> = {
   "dashboard.location": "Localização",
 
   "result.dashboard": "Dashboard",
+  "result.simplified": "LINGUAGEM SIMPLES",
   "result.orchestrator": "SÍNTESE DO ORQUESTRADOR",
   "result.agents.title": "RACIOCÍNIO INDIVIDUAL DOS AGENTES",
   "result.agent.meteo": "Agente Meteorológico",

@@ -207,6 +207,7 @@ const en: Record<string, string> = {
   "dashboard.location": "Location",
 
   "result.dashboard": "Dashboard",
+  "result.simplified": "SIMPLE LANGUAGE",
   "result.orchestrator": "ORCHESTRATOR SYNTHESIS",
   "result.agents.title": "INDIVIDUAL AGENT REASONING",
   "result.agent.meteo": "Weather Agent",

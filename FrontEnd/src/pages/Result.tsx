@@ -1,7 +1,7 @@
 import { style } from "../styles/styles.js";
 import { useLocation, useNavigate } from "react-router-dom";
 import {
-  ChevronLeft, Brain, Network, CloudSun, Zap, Battery, Cpu
+  ChevronLeft, Brain, Network, CloudSun, Zap, Battery, Cpu, MessageCircle
 } from "lucide-react";
 import type { AnalysisResponse } from "../types/index.js";
 import { useLanguage } from "../i18n/index.js";
@@ -23,6 +23,7 @@ export default function Result() {
   const agentConsumption = analysis.agents?.consumption;
   const agentStorage = analysis.agents?.storage;
   const recommendation = analysis.recommendation;
+  const simplified = analysis.simplified;
 
   const analysisDate = analysis.analysis_date || analysis.date || "";
   const genSummary = agentWeather?.summary || analysis.raw_data?.insights?.generation || "";
@@ -58,6 +59,18 @@ export default function Result() {
       </header>
 
       <main className={style.containerSmSpaceY5}>
+        {simplified?.simplified_text ? (
+          <div className="rounded-xl border border-primary/20 bg-primary/5 p-4">
+            <div className="flex items-center gap-2 text-xs font-mono text-primary mb-2">
+              <MessageCircle size={12} />
+              {t("result.simplified")}
+            </div>
+            <p className="text-base text-foreground leading-relaxed">
+              {simplified.simplified_text}
+            </p>
+          </div>
+        ) : null}
+
         <div className={style.cardPrimary}>
           <div className="flex items-center gap-2 text-xs font-mono text-primary mb-3">
             <Brain size={12} />
