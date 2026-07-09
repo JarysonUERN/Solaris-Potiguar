@@ -1,9 +1,10 @@
 class AnalysisSerializer
-  def initialize(analysis, shared_context = nil, agents = nil, recommendation = nil)
+  def initialize(analysis, shared_context = nil, agents = nil, recommendation = nil, simplified = nil)
     @analysis = analysis
     @shared_context = shared_context
     @agents = agents
     @recommendation = recommendation
+    @simplified = simplified
   end
 
   def serialize
@@ -55,6 +56,11 @@ class AnalysisSerializer
       recommendations: base[:recommendation][:recommendation]
     }
     base[:raw_data] = { insights: extract_legacy_insights(raw, agent_data) }
+
+    simplified_data = @simplified || raw.dig("simplified") || raw.dig(:simplified) || {}
+    base[:simplified] = {
+      simplified_text: simplified_data.dig("simplified_text") || simplified_data.dig(:simplified_text) || ""
+    }
 
     base
   end
