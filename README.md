@@ -58,6 +58,7 @@ The goal is not to replace existing Energy Management Systems, but to make intel
 | ⚡ Consumption Agent | Analyzes operational profiles and consumption behavior |
 | 🔋 Storage Agent | Evaluates battery availability and energy storage opportunities |
 | 🧠 Orchestrator Agent | Combines all analyses into practical recommendations in natural language |
+| 💬 Simplification Agent | Rewrites technical recommendations into extremely simple, accessible language |
 
 ---
 
@@ -86,7 +87,7 @@ The goal is not to replace existing Energy Management Systems, but to make intel
 | PostgreSQL | 16 Alpine |
 | Authentication | JWT (bcrypt + HS256) |
 | Weather | Open-Meteo API |
-| AI | Fireworks AI — 4 agents (gpt-oss-120b) |
+| AI | Fireworks AI — 5 agents (gpt-oss-120b & gemma-7b-it) |
 | Email | Action Mailer + SMTP |
 | Docker | Multi-stage with entrypoint |
 
@@ -177,7 +178,7 @@ Solaris-Potiguar/
 │   ├── app/
 │   │   ├── controllers/    # API + Auth + Analysis + Daily
 │   │   ├── models/         # User, Property, Analysis
-│   │   ├── services/       # Climate, Energy, 4 AI Agents, JWT
+│   │   ├── services/       # Climate, Energy, 5 AI Agents, JWT
 │   │   ├── mailers/        # ApplicationMailer, DailyAnalysisMailer
 │   │   ├── serializers/    # AnalysisSerializer
 │   │   └── views/          # Mailer templates (HTML + TXT)
@@ -277,10 +278,10 @@ Platform licensing for:
 
 # Why AMD?
 
-Solaris Potiguar runs its multi-agent reasoning pipeline on Fireworks AI, which leverages AMD infrastructure to deliver fast and cost-effective large model inference.
-Each analysis request triggers four sequential AI agents — Weather, Consumption, Storage, and Orchestrator — all powered by fireworks/models/gpt-oss-120b, a 120-billion parameter open-source model. The full pipeline completes in approximately 20 seconds, producing a structured, property-specific recommendation from raw climate and operational data.
-
-Running a 120B parameter model at this scale through AMD-accelerated infrastructure makes it economically viable to serve small rural producers — a segment that cannot afford enterprise-grade energy software. The combination of AMD compute efficiency and the Fireworks AI API allows Solaris to keep inference costs low enough to support a SaaS model accessible to cooperatives and small agribusinesses.
+Solaris Potiguar runs its entire AI pipeline on Fireworks AI, leveraging AMD infrastructure to deliver fast and cost-effective large model inference.
+Each analysis request triggers four specialized AI agents — Weather, Consumption, Storage, and Orchestrator — powered by fireworks/models/gpt-oss-120b, a 120-billion parameter open-source model. The orchestrator consolidates all analyses into a structured energy recommendation. A fifth agent, powered by Gemma, then rewrites that recommendation into plain, accessible language — ensuring that rural producers with no technical background can immediately understand and act on the insight.
+The full pipeline completes in approximately 20 seconds, transforming raw climate and operational data into a property-specific recommendation ready for the field.
+Running a 120B parameter model alongside Gemma through AMD-accelerated infrastructure makes it economically viable to serve small rural producers — a segment that cannot afford enterprise-grade energy software. The combination of AMD compute efficiency and the Fireworks AI API allows Solaris to keep inference costs low enough to support a SaaS model accessible to cooperatives and small agribusinesses across Northeast Brazil.
 
 ---
 
@@ -395,6 +396,7 @@ chmod +x n8n/import-workflow.sh
         ├── ⚡ EnergyCalculatorService
         ├── 🤖 WeatherAgent / ConsumptionAgent / StorageAgent
         ├── 🧠 OrchestratorAgent
+        ├── 💬 SimplificationAgent
         └── 💾 Saves the analysis to the database
         │
         ▼
