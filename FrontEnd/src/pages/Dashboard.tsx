@@ -47,22 +47,25 @@ function buildWeatherDisplay(analysis: AnalysisResponse): ClimateDisplay {
   const cloud_cover = weather.cloud_cover;
   const temperature = weather.temperature_max;
 
-  const is_real_data = irradiation > 0 || cloud_cover > 0 || temperature > 0;
+  const has_real_data = irradiation > 0 || cloud_cover > 0 || temperature > 0;
+  const has_wind = has_real_data && weather.wind_speed !== undefined;
+  const has_uv = has_real_data && weather.uv_index !== undefined;
+  const has_humidity = has_real_data && weather.humidity !== undefined;
 
   let condition = "Ensolarado";
   if (cloud_cover > 60) condition = "Nublado";
   else if (cloud_cover > 30) condition = "Parcialmente nublado";
-  if (!is_real_data) condition = "Sem dados climáticos";
+  if (!has_real_data) condition = "Sem dados climáticos";
 
   return {
     temp: Math.round(temperature),
     condition,
-    uv: is_real_data && irradiation > 4 ? Math.round(irradiation * 2) : null,
-    wind: is_real_data ? 12 : null,
-    humidity: is_real_data ? Math.round(Math.max(20, Math.min(95, 100 - irradiation * 8))) : null,
+    uv: has_uv ? Math.round(weather.uv_index!) : null,
+    wind: has_wind ? Math.round(weather.wind_speed!) : null,
+    humidity: has_humidity ? Math.round(weather.humidity!) : null,
     irradiation,
     cloud_cover,
-    is_real_data,
+    is_real_data: has_real_data,
   };
 }
 

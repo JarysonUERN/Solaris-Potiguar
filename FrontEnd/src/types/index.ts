@@ -88,6 +88,14 @@ export interface WeatherData {
   precipitation_probability: number;
   solar_irradiance: string;
   solar_irradiation: number;
+  wind_speed?: number;
+  wind_direction?: number;
+  humidity?: number;
+  precipitation?: number;
+  rain?: number;
+  showers?: number;
+  snowfall?: number;
+  uv_index?: number;
 }
 
 export interface AgentWeatherResponse {
@@ -187,6 +195,14 @@ export interface ClimateFetchResponse {
     cloud_cover: number;
     temperature: number;
     unit: string;
+    wind_speed: number;
+    wind_direction: number;
+    humidity: number;
+    precipitation: number;
+    rain: number;
+    showers: number;
+    snowfall: number;
+    uv_index: number;
   };
 }
 
