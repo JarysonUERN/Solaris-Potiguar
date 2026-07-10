@@ -123,6 +123,7 @@ export async function submitOnboarding(data: {
   average_monthly_consumption_kwh: number;
   operation_type: string;
   operation_description: string;
+  main_equipments: string[];
 }): Promise<OnboardingResponse> {
   return request<OnboardingResponse>("/solaris_potiguar/onboarding", {
     method: "POST",

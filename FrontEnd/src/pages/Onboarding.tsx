@@ -81,6 +81,7 @@ export default function Onboarding() {
     profile: "residencial",
     routine: "",
   });
+  const [selectedEquipment, setSelectedEquipment] = useState<string[]>([]);
   const [selectedCity, setSelectedCity] = useState<CitySuggestion | null>(null);
   const [suggestions, setSuggestions] = useState<CitySuggestion[]>([]);
   const [isSearchingCity, setIsSearchingCity] = useState(false);
@@ -162,6 +163,7 @@ export default function Onboarding() {
         average_monthly_consumption_kwh: parseFloat(config.consumption) || 0,
         operation_type: config.profile,
         operation_description: config.routine,
+        main_equipments: selectedEquipment.map((k) => t(k)),
       });
 
       const existing = localStorage.getItem("solaris-auth");
@@ -406,23 +408,29 @@ export default function Onboarding() {
                       {t("onboarding.step3.label.equipment")}
                     </label>
                     <div className="flex flex-wrap gap-2">
-                      {equipmentKeys.map((key) => (
-                        <button
-                          key={key}
-                          type="button"
-                          onClick={() =>
-                            setConfig({
-                              ...config,
-                              routine: config.routine
-                                ? `${config.routine}\n${t(key)}`
-                                : t(key),
-                            })
-                          }
-                          className="px-3 py-1.5 rounded-lg border border-border bg-secondary text-xs text-muted-foreground hover:border-primary/40 hover:text-foreground hover:bg-primary/5 transition-all active:scale-95"
-                        >
-                          + {t(key)}
-                        </button>
-                      ))}
+                      {equipmentKeys.map((key) => {
+                        const isSelected = selectedEquipment.includes(key);
+                        return (
+                          <button
+                            key={key}
+                            type="button"
+                            onClick={() =>
+                              setSelectedEquipment((prev) =>
+                                prev.includes(key)
+                                  ? prev.filter((k) => k !== key)
+                                  : [...prev, key]
+                              )
+                            }
+                            className={`px-3 py-1.5 rounded-lg border text-xs transition-all active:scale-95 ${
+                              isSelected
+                                ? "border-primary bg-primary/15 text-primary font-semibold"
+                                : "border-border bg-secondary text-muted-foreground hover:border-primary/40 hover:text-foreground hover:bg-primary/5"
+                            }`}
+                          >
+                            {isSelected ? "✓" : "+"} {t(key)}
+                          </button>
+                        );
+                      })}
                     </div>
                     <p className="text-xs text-muted-foreground mt-2">
                       {t("onboarding.step3.hint.equipment")}

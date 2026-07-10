@@ -118,7 +118,10 @@ export default function Dashboard() {
 
         console.log("[Dashboard] fetching property", pid);
         const [propRes, climateRes, historyRes] = await Promise.all([
-          fetchProperty(pid),
+          fetchProperty(pid).catch((e) => {
+            console.warn("[Dashboard] property not found", e);
+            return null;
+          }),
           fetchClimate(pid).catch((e) => {
             console.warn("[Dashboard] climate failed", e);
             return null;
@@ -128,6 +131,11 @@ export default function Dashboard() {
             return [] as AnalysisResponse[];
           }),
         ]);
+
+        if (!propRes) {
+          navigate("/onboarding", { replace: true });
+          return;
+        }
 
         console.log("[Dashboard] property fetched", propRes);
         setProperty(propRes.property);
