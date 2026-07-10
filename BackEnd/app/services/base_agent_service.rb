@@ -32,7 +32,7 @@ class BaseAgentService
           { role: "user", content: user_prompt }
         ],
         temperature: 0.3,
-        max_tokens: 500
+        max_tokens: 2000
       }.to_json,
       timeout: 60
     )

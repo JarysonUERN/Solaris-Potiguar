@@ -69,8 +69,10 @@
             </div>
           </div>
 
-          <% if analysis.executive_summary.present? %>
-            <div class="insight">💡 <%= analysis.executive_summary %></div>
+          <% simplified = analysis.raw_data&.dig("simplified", "simplified_text") %>
+          <% insight = simplified.presence || analysis.executive_summary %>
+          <% if insight.present? %>
+            <div class="insight">💡 <%= insight %></div>
           <% end %>
 
           <% if analysis.estimated_savings_currency.to_f > 0 %>

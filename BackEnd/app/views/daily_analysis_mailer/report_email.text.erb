@@ -17,12 +17,10 @@ Aqui está o resumo de hoje com as condições e recomendações para suas propr
   Saldo:     <%= number_with_precision(analysis.balance_kwh, precision: 1) %> kWh
   Economia:  <%= number_to_currency(analysis.estimated_savings_currency, unit: "R$", precision: 2) %>
 
-  <% if analysis.executive_summary.present? %>
-  💡 <%= analysis.executive_summary %>
-  <% end %>
-
-  <% if analysis.recommendations.present? %>
-  📋 Recomendação: <%= analysis.recommendations %>
+  <% simplified = analysis.raw_data&.dig("simplified", "simplified_text") %>
+  <% insight = simplified.presence || analysis.executive_summary %>
+  <% if insight.present? %>
+  💡 <%= insight %>
   <% end %>
 <% end %>
 

@@ -19,11 +19,11 @@ class SimplificationAgentService < BaseAgentService
       Your ONLY job is to rewrite technical solar energy recommendations in extremely simple, clear language.
 
       Rules:
-      - Use very short sentences.
-      - Avoid technical words.
-      - Use everyday words a farmer would understand.
-      - Keep the original message and recommendation intact but make it accessible to anyone.
-      - Be friendly and helpful.
+      - Output MUST be at most 2 short sentences.
+      - Use only everyday words a farmer would understand.
+      - No technical jargon at all.
+      - Be direct and concrete — say what to do and why.
+      - Friendly tone but extremely concise.
 
       #{lang_instruction}
 
