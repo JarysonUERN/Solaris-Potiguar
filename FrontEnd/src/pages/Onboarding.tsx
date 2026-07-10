@@ -398,13 +398,13 @@ export default function Onboarding() {
               </div>
 
               <div className="border-t border-border pt-4">
-                <label className={style.label}>Pico de consumo</label>
-                <p className="text-xs text-muted-foreground mb-3">Em qual período sua fazenda mais consome energia?</p>
+                <label className={style.label}>{t("onboarding.step2.label.peak")}</label>
+                <p className="text-xs text-muted-foreground mb-3">{t("onboarding.step2.hint.peak")}</p>
                 <div className="flex gap-2">
                   {[
-                    { value: "morning", label: "Manhã (6h–12h)" },
-                    { value: "afternoon", label: "Tarde (12h–18h)" },
-                    { value: "night", label: "Noite (18h–0h)" },
+                    { value: "morning", label: t("onboarding.step2.peak.morning") },
+                    { value: "afternoon", label: t("onboarding.step2.peak.afternoon") },
+                    { value: "night", label: t("onboarding.step2.peak.night") },
                   ].map((opt) => (
                     <button
                       key={opt.value}
@@ -474,8 +474,8 @@ export default function Onboarding() {
                       className="accent-primary w-4 h-4"
                     />
                     <div>
-                      <span className="text-sm font-medium text-foreground">Operação flexível</span>
-                      <p className="text-xs text-muted-foreground">Posso ajustar os horários de funcionamento dos equipamentos</p>
+                      <span className="text-sm font-medium text-foreground">{t("onboarding.step3.label.flexible")}</span>
+                      <p className="text-xs text-muted-foreground">{t("onboarding.step3.hint.flexible")}</p>
                     </div>
                   </label>
 
