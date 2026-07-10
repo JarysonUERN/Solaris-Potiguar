@@ -82,6 +82,8 @@ export default function Onboarding() {
     routine: "",
   });
   const [selectedEquipment, setSelectedEquipment] = useState<string[]>([]);
+  const [flexibleOperation, setFlexibleOperation] = useState(false);
+  const [peakPeriod, setPeakPeriod] = useState<string>("");
   const [selectedCity, setSelectedCity] = useState<CitySuggestion | null>(null);
   const [suggestions, setSuggestions] = useState<CitySuggestion[]>([]);
   const [isSearchingCity, setIsSearchingCity] = useState(false);
@@ -163,6 +165,8 @@ export default function Onboarding() {
         average_monthly_consumption_kwh: parseFloat(config.consumption) || 0,
         operation_type: config.profile,
         operation_description: config.routine,
+        flexible_operation: flexibleOperation,
+        peak_consumption_period: peakPeriod === "" ? null : peakPeriod,
         main_equipments: selectedEquipment.map((k) => t(k)),
       });
 
@@ -392,6 +396,31 @@ export default function Onboarding() {
                   {t("onboarding.step2.hint.consumption")}
                 </p>
               </div>
+
+              <div className="border-t border-border pt-4">
+                <label className={style.label}>Pico de consumo</label>
+                <p className="text-xs text-muted-foreground mb-3">Em qual período sua fazenda mais consome energia?</p>
+                <div className="flex gap-2">
+                  {[
+                    { value: "morning", label: "Manhã (6h–12h)" },
+                    { value: "afternoon", label: "Tarde (12h–18h)" },
+                    { value: "night", label: "Noite (18h–0h)" },
+                  ].map((opt) => (
+                    <button
+                      key={opt.value}
+                      type="button"
+                      onClick={() => setPeakPeriod(peakPeriod === opt.value ? "" : opt.value)}
+                      className={`flex-1 px-3 py-2 rounded-lg border text-xs font-medium transition-all ${
+                        peakPeriod === opt.value
+                          ? "border-primary bg-primary/15 text-primary"
+                          : "border-border bg-secondary text-muted-foreground hover:border-primary/30 hover:text-foreground"
+                      }`}
+                    >
+                      {opt.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
             </div>
           )}
 
@@ -436,6 +465,19 @@ export default function Onboarding() {
                       {t("onboarding.step3.hint.equipment")}
                     </p>
                   </div>
+
+                  <label className="flex items-center gap-3 p-3 rounded-lg border border-border cursor-pointer hover:border-primary/30 transition-colors">
+                    <input
+                      type="checkbox"
+                      checked={flexibleOperation}
+                      onChange={(e) => setFlexibleOperation(e.target.checked)}
+                      className="accent-primary w-4 h-4"
+                    />
+                    <div>
+                      <span className="text-sm font-medium text-foreground">Operação flexível</span>
+                      <p className="text-xs text-muted-foreground">Posso ajustar os horários de funcionamento dos equipamentos</p>
+                    </div>
+                  </label>
 
                   <div>
                     <label className={style.label}>
