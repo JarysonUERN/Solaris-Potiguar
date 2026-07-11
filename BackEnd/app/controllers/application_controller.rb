@@ -1,4 +1,4 @@
-class ApplicationController < ActionController::Base
+class ApplicationController < ActionController::API
   rescue_from ActiveRecord::RecordNotFound, with: :not_found
   rescue_from ActiveRecord::RecordInvalid, with: :unprocessable
   rescue_from ActionController::ParameterMissing, with: :bad_request
