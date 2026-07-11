@@ -8,6 +8,8 @@ import type {
   CitySuggestion,
 } from "../types/index.js";
 
+const API_BASE = import.meta.env.VITE_API_URL ?? "";
+
 function getToken(): string | null {
   const raw = localStorage.getItem("solaris-auth");
   if (!raw) return null;
@@ -77,7 +79,7 @@ export async function login(
   email: string,
   password: string
 ): Promise<AuthResponse> {
-  return request<AuthResponse>("/solaris_potiguar/login", {
+  return request<AuthResponse>(`${API_BASE}/solaris_potiguar/login`, {
     method: "POST",
     body: JSON.stringify({ email, password }),
   });
@@ -91,14 +93,14 @@ export async function register(data: {
   has_whatsapp: boolean;
   cpf: string;
 }): Promise<{ id: number; full_name: string; email: string }> {
-  return request("/solaris_potiguar/register", {
+  return request(`${API_BASE}/solaris_potiguar/register`, {
     method: "POST",
     body: JSON.stringify(data),
   });
 }
 
 export async function fetchUser(): Promise<User> {
-  return request<User>("/solaris_potiguar/user");
+  return request<User>(`${API_BASE}/solaris_potiguar/user`);
 }
 
 export async function updateUser(data: {
@@ -106,7 +108,7 @@ export async function updateUser(data: {
   phone?: string;
   has_whatsapp?: boolean;
 }): Promise<{ message: string; user: User }> {
-  return request("/solaris_potiguar/user", {
+  return request(`${API_BASE}/solaris_potiguar/user`, {
     method: "PUT",
     body: JSON.stringify(data),
   });
@@ -127,7 +129,7 @@ export async function submitOnboarding(data: {
   peak_consumption_period: string | null;
   main_equipments: string[];
 }): Promise<OnboardingResponse> {
-  return request<OnboardingResponse>("/solaris_potiguar/onboarding", {
+  return request<OnboardingResponse>(`${API_BASE}/solaris_potiguar/onboarding`, {
     method: "POST",
     body: JSON.stringify(data),
   });
@@ -136,20 +138,20 @@ export async function submitOnboarding(data: {
 export async function fetchProperty(
   propertyId: number
 ): Promise<{ property: Property }> {
-  return request(`/api/setup/${propertyId}`);
+  return request(`${API_BASE}/api/setup/${propertyId}`);
 }
 
 export async function fetchClimate(
   propertyId: number
 ): Promise<ClimateFetchResponse> {
-  return request<ClimateFetchResponse>(`/api/climate/fetch/${propertyId}`);
+  return request<ClimateFetchResponse>(`${API_BASE}/api/climate/fetch/${propertyId}`);
 }
 
 export async function createAnalysis(
   propertyId: number,
   lang?: string
 ): Promise<AnalysisResponse> {
-  return request<AnalysisResponse>("/api/analysis", {
+  return request<AnalysisResponse>(`${API_BASE}/api/analysis`, {
     method: "POST",
     body: JSON.stringify({ property_id: propertyId, lang }),
     timeout: 180000,
@@ -157,13 +159,13 @@ export async function createAnalysis(
 }
 
 export async function fetchAnalysis(id: number): Promise<AnalysisResponse> {
-  return request<AnalysisResponse>(`/api/analysis/${id}`);
+  return request<AnalysisResponse>(`${API_BASE}/api/analysis/${id}`);
 }
 
 export async function fetchAnalysesByProperty(
   propertyId: number
 ): Promise<AnalysisResponse[]> {
   return request<AnalysisResponse[]>(
-    `/api/analysis/property/${propertyId}`
+    `${API_BASE}/api/analysis/property/${propertyId}`
   );
 }
