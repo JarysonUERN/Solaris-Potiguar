@@ -1,4 +1,41 @@
 pt-BR:
+  activerecord:
+    errors:
+      messages:
+        blank: "não pode ficar em branco"
+        taken: "já está em uso"
+        invalid: "é inválido"
+        too_short: "é muito curto (mínimo: %{count} caracteres)"
+        greater_than: "deve ser maior que %{count}"
+        inclusion: "não está incluído na lista"
+        not_found: "não encontrado"
+        record_invalid: "A validação falhou: %{errors}"
+    models:
+      user:
+        one: "Usuário"
+        other: "Usuários"
+      property:
+        one: "Propriedade"
+        other: "Propriedades"
+      analysis:
+        one: "Análise"
+        other: "Análises"
+    attributes:
+      user:
+        full_name: "Nome completo"
+        email: "E-mail"
+        cpf: "CPF"
+        password: "Senha"
+      property:
+        farm_name: "Nome da fazenda"
+        city: "Cidade"
+        installed_power_kwp: "Potência instalada (kWp)"
+        average_daily_consumption_kwh: "Consumo médio diário (kWh)"
+        battery_capacity_kwh: "Capacidade da bateria (kWh)"
+        operation_type: "Tipo de operação"
+        peak_consumption_period: "Período de pico de consumo"
+      analysis:
+        analysis_date: "Data da análise"
   date:
     formats:
       default: "%d/%m/%Y"
