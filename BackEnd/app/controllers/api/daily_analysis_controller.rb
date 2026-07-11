@@ -1,6 +1,5 @@
 module Api
   class DailyAnalysisController < ApplicationController
-    skip_before_action :verify_authenticity_token
     before_action :authenticate_api_key
 
     def send_reports
