@@ -15,7 +15,7 @@
 Solaris Potiguar is an AI-powered decision support platform that helps small rural producers, cooperatives, and agribusinesses maximize the value of their photovoltaic systems. By combining weather forecasts, operational context, and multi-agent reasoning accelerated by AMD infrastructure, Solaris turns complex energy data into simple, actionable recommendations.
 
 >[!NOTE]
-> If you are running the application on the demo website, please, take in consideration that only the app frontend run on vercel, while the database and backend are currently running through Render free. That means that the first time that you make any requisition, it might take a minute or to so the backend wake up. Be patient.
+> If you are running the application through the demo website, please, take in consideration that only the app frontend run on Vercel the database and backend are currently running through Render Free. That means that the first time that you make any requisition, it might take a minute or two as the service wake up. Be patient.
 
 ---
 # The Problem
