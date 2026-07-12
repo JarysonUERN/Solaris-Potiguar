@@ -17,8 +17,8 @@ Solaris Potiguar is an AI-powered decision support platform that helps small rur
 >[!NOTE]
 > If you are running the application on the demo website, please, take in consideration that only the app frontend run on vercel, while the database and backend are currently running through Render free. That means that the first time that you make any requisition, it might take a minute or to so the backend wake up. Be patient.
 
+---
 # The Problem
-
 Northeast Brazil has one of the highest solar irradiation levels in the world, making photovoltaic generation increasingly accessible to small rural producers and cooperatives.
 
 However, owning solar panels does not automatically mean using energy efficiently.
