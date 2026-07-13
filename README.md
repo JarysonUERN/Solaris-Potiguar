@@ -14,10 +14,11 @@
 
 Solaris Potiguar is an AI-powered decision support platform that helps small rural producers, cooperatives, and agribusinesses maximize the value of their photovoltaic systems. By combining weather forecasts, operational context, and multi-agent reasoning accelerated by AMD infrastructure, Solaris turns complex energy data into simple, actionable recommendations.
 
+>[!NOTE]
+> If you are running the application through the demo website, please, take in consideration that only the app frontend run on Vercel the database and backend are currently running through Render Free. That means that the first time that you make any requisition, it might take a minute or two as the service wake up. Be patient.
 
-
+---
 # The Problem
-
 Northeast Brazil has one of the highest solar irradiation levels in the world, making photovoltaic generation increasingly accessible to small rural producers and cooperatives.
 
 However, owning solar panels does not automatically mean using energy efficiently.
@@ -61,7 +62,20 @@ The goal is not to replace existing Energy Management Systems, but to make intel
 | 💬 Simplification Agent | Rewrites technical recommendations into extremely simple, accessible language |
 
 ---
+## AMD Developer Cloud Validation
 
+Solaris Potiguar uses Fireworks AI as the inference backend for its multi-agent architecture.
+
+To additionally validate the production inference workflow on AMD infrastructure, we executed the same request structure inside the AMD Developer Cloud.
+
+The notebook `amd_validation.ipynb` demonstrates:
+
+- AMD ROCm environment detection (`rocm-smi`);
+- Fireworks AI API integration;
+- GPT-OSS-120B inference;
+- reproduction of the same payload used by the Rails backend.
+
+  
 # Technology Stack
 
 ## Frontend
