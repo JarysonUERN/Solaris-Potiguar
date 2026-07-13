@@ -62,7 +62,20 @@ The goal is not to replace existing Energy Management Systems, but to make intel
 | 💬 Simplification Agent | Rewrites technical recommendations into extremely simple, accessible language |
 
 ---
+## AMD Developer Cloud Validation
 
+Solaris Potiguar uses Fireworks AI as the inference backend for its multi-agent architecture.
+
+To additionally validate the production inference workflow on AMD infrastructure, we executed the same request structure inside the AMD Developer Cloud.
+
+The notebook `amd_validation.ipynb` demonstrates:
+
+- AMD ROCm environment detection (`rocm-smi`);
+- Fireworks AI API integration;
+- GPT-OSS-120B inference;
+- reproduction of the same payload used by the Rails backend.
+
+  
 # Technology Stack
 
 ## Frontend
