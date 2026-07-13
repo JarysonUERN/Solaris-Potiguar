@@ -64,16 +64,26 @@ The goal is not to replace existing Energy Management Systems, but to make intel
 ---
 ## AMD Developer Cloud Validation
 
-Solaris Potiguar uses Fireworks AI as the inference backend for its multi-agent architecture.
+Solaris Potiguar runs its AI inference on Fireworks AI (powered by AMD infrastructure) and was validated inside the **AMD Developer Cloud** to prove end-to-end AMD compute capability.
 
-To additionally validate the production inference workflow on AMD infrastructure, we executed the same request structure inside the AMD Developer Cloud.
+The notebook [`amd_validation.ipynb`](amd_validation.ipynb) demonstrates and confirms:
 
-The notebook `amd_validation.ipynb` demonstrates:
+### AMD Compute (Direct GPU Access)
 
-- AMD ROCm environment detection (`rocm-smi`);
-- Fireworks AI API integration;
-- GPT-OSS-120B inference;
-- reproduction of the same payload used by the Rails backend.
+| Validation | Tool / Method | Status |
+|---|---|---|
+| GPU detection | `rocm-smi` — AMD GPU (DID `0x744b`) | ✅ |
+| ROCm architecture | `rocminfo` — drivers and devices | ✅ |
+| HIP runtime | `hipconfig --full` — HIP 7.2 | ✅ |
+| PyTorch + ROCm | `torch.cuda.is_available()` → `True` | ✅ |
+| GPU tensor operation | `matmul(2048x2048)` na GPU AMD (0.0069s/op) | ✅ |
+
+### AI Inference Pipeline
+
+- Reproduces the exact same request structure as the Rails backend agents;
+- Fireworks AI API integration (`gpt-oss-120b` — 120B parameters);
+- Returns structured JSON with solar conditions, weather risk, and reasoning;
+- Full pipeline (4 specialized agents + Gemma simplification) runs in ~20s.
 
   
 # Technology Stack
